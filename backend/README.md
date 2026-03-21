@@ -58,7 +58,8 @@ cp -n .env.example .env   # puis éditer .env
 docker compose up --build
 ```
 
-- **Swagger** : [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Swagger** : ouvrir **[http://localhost:8000/docs](http://localhost:8000/docs)** (ou `http://127.0.0.1:8000/docs`). Ne pas utiliser `http://0.0.0.0:8000` dans le navigateur : `0.0.0.0` signifie seulement « écouter sur toutes les interfaces », ce n’est pas une adresse de connexion.
+- Le fichier `.env` est monté dans le conteneur (`/app/.env`) pour éviter les avertissements OpenHosta tout en gardant les secrets hors image.
 - Arrêt : `Ctrl+C` ou `docker compose down`
 
 ### Image seule (`docker build` / `docker run`)

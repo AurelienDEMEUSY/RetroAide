@@ -8,4 +8,7 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    # OpenHosta cherche un fichier .env sous /app ; env_file seul n’en crée pas dans l’image
+    volumes:
+      - ./.env:/app/.env:ro
     restart: unless-stopped
