@@ -49,10 +49,6 @@ const Glossary = () => {
         <div className="hidden md:flex items-center gap-12 text-sm font-medium text-slate-600">
           <Link to="/dashboard" className="hover:text-slate-900">Plan</Link>
           <Link to="/glossary" className="relative py-2 text-slate-900 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-slate-900">Glossaire</Link>
-          <button className="hover:text-slate-900">Support</button>
-        </div>
-        <div>
-          <button className="text-sm font-semibold hover:underline">Get Help</button>
         </div>
       </nav>
 
@@ -103,22 +99,6 @@ const Glossary = () => {
           </div>
         </div>
       </section>
-
-      {/* Call to Action */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-16 w-full">
-        <section className="bg-[#1a2e4d] rounded-[2rem] md:rounded-[3rem] p-8 md:p-20 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 relative overflow-hidden">
-          <div className="space-y-4 md:space-y-6 max-w-xl z-10 text-center md:text-left">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">Besoin d'un éclairage personnalisé ?</h2>
-            <p className="text-slate-300 text-base md:text-lg leading-relaxed">
-              Si un terme reste flou ou si vous souhaitez analyser votre situation avec un expert, nos conseillers sont disponibles pour vous accompagner.
-            </p>
-          </div>
-          <button className="w-full md:w-auto justify-center bg-[#c2e7d9] hover:bg-[#b0d9c9] text-[#1a2e4d] font-bold py-4 md:py-5 px-8 md:px-10 rounded-2xl md:rounded-3xl flex items-center gap-3 transition-all whitespace-nowrap z-10 shadow-lg hover:scale-105 text-sm md:text-base">
-            <Headphones className="w-5 h-5 md:w-6 md:h-6" />
-            Parler à un conseiller
-          </button>
-        </section>
-      </div>
 
       {/* Footer Info / Disclaimer */}
       <footer className="max-w-7xl mx-auto px-6 w-full">

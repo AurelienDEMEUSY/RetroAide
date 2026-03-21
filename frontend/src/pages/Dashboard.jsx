@@ -1,18 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Landmark, 
-  Library, 
   CheckCircle2, 
   Clock, 
   ExternalLink, 
   ArrowRight, 
   ShieldCheck, 
   HelpCircle,
-  Database
+  Database,
+  Loader2
 } from 'lucide-react';
 
 const Dashboard = () => {
+  const [simulationData, setSimulationData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fallback defaults without API
+  const data = simulationData || {
+    ageLegal: 64,
+    trimestresValides: 128,
+    trimestresRequis: 172,
+    trimestresRestants: 44,
+    droitsOublies: [],
+    isMocked: true
+  };
+
+  const trimestresPercent = Math.round((data.trimestresValides / data.trimestresRequis) * 100) || 0;
+
   return (
     <div className="min-h-screen bg-[#f3f4f6] font-sans text-slate-900">
       {/* Navigation */}
@@ -24,10 +39,6 @@ const Dashboard = () => {
         <div className="hidden md:flex items-center gap-12 text-sm font-medium text-slate-600">
           <Link to="/dashboard" className="relative py-2 text-slate-900 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-slate-900">Plan</Link>
           <Link to="/glossary" className="hover:text-slate-900">Glossaire</Link>
-          <button className="hover:text-slate-900">Support</button>
-        </div>
-        <div>
-          <button className="text-sm font-semibold hover:underline">Get Help</button>
         </div>
       </nav>
 
@@ -49,11 +60,11 @@ const Dashboard = () => {
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-56">
             <div>
               <p className="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-6 antialiased">ÂGE LÉGAL DE DÉPART</p>
-              <h2 className="text-5xl font-bold text-slate-900">64 ans</h2>
+              <h2 className="text-5xl font-bold text-slate-900">{data.ageLegal} ans</h2>
             </div>
             <div className="flex items-center gap-2 text-green-600 font-medium text-sm">
               <CheckCircle2 className="w-5 h-5" />
-              <span>Estimation consolidée</span>
+              <span>{data.isMocked ? "Estimation (API Standard)" : "Calcul officiel certifié"}</span>
             </div>
           </div>
 
@@ -61,10 +72,10 @@ const Dashboard = () => {
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-56">
             <div>
               <p className="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-6 antialiased uppercase">TRIMESTRES VALIDÉS</p>
-              <h2 className="text-5xl font-bold text-slate-900">128 <span className="text-2xl text-gray-400 font-normal">/ 172</span></h2>
+              <h2 className="text-5xl font-bold text-slate-900">{data.trimestresValides} <span className="text-2xl text-gray-400 font-normal">/ {data.trimestresRequis}</span></h2>
             </div>
             <div className="w-full bg-gray-100 h-2.5 rounded-full mt-4 overflow-hidden">
-               <div className="bg-[#a4dcb4] h-full w-[74%] rounded-full"></div>
+               <div className="bg-[#a4dcb4] h-full rounded-full transition-all duration-1000" style={{ width: `${trimestresPercent}%` }}></div>
             </div>
           </div>
 
@@ -72,7 +83,7 @@ const Dashboard = () => {
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-56">
             <div>
               <p className="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-6 antialiased uppercase">TRIMESTRES RESTANTS</p>
-              <h2 className="text-5xl font-bold text-slate-900">44</h2>
+              <h2 className="text-5xl font-bold text-slate-900">{data.trimestresRestants}</h2>
             </div>
             <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
               <Clock className="w-5 h-5" />
@@ -94,37 +105,31 @@ const Dashboard = () => {
            </div>
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Forgotten Right 1 */}
-              <div className="bg-white p-8 rounded-2xl shadow-sm flex flex-col">
-                 <div className="mb-4 flex-1">
-                    <div className="w-12 h-12 bg-blue-50 text-blue-400 rounded-xl flex items-center justify-center mb-4">
-                       <Clock className="w-6 h-6" />
+              {data.droitsOublies.length > 0 ? data.droitsOublies.map((droit, index) => {
+                const colorClasses = droit.color === 'green' ? 'bg-green-50 text-green-500' 
+                                   : droit.color === 'blue' ? 'bg-blue-50 text-blue-400' 
+                                   : 'bg-gray-50 text-gray-400';
+                return (
+                  <div key={index} className="bg-white p-8 rounded-2xl shadow-sm flex flex-col">
+                    <div className="mb-4 flex-1">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${colorClasses}`}>
+                          {droit.icon === 'Clock' ? <Clock className="w-6 h-6" /> : <HelpCircle className="w-6 h-6" />}
+                        </div>
+                        <h4 className="text-lg font-bold text-slate-900 mb-2">{droit.type}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                          {droit.description}
+                        </p>
                     </div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-2">Période de chômage 2003</h4>
-                    <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                      4 trimestres n'apparaissent pas sur votre relevé actuel. Une attestation Pôle Emploi est requise.
-                    </p>
-                 </div>
-                 <button className="flex items-center gap-2 text-sm font-bold text-slate-900 hover:opacity-70 mt-auto justify-start">
-                    Récupérer l'attestation <ExternalLink className="w-4 h-4" />
-                 </button>
-              </div>
-
-              {/* Forgotten Right 2 */}
-              <div className="bg-white p-8 rounded-2xl shadow-sm flex flex-col">
-                 <div className="mb-4 flex-1">
-                    <div className="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center mb-4">
-                       <HelpCircle className="w-6 h-6" />
-                    </div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-2">Majoration Éducation</h4>
-                    <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                      Vous pourriez bénéficier de 8 trimestres supplémentaires au titre de l'éducation de vos enfants.
-                    </p>
-                 </div>
-                 <button className="flex items-center gap-2 text-sm font-bold text-slate-900 hover:opacity-70 mt-auto justify-start">
-                    Déclarer mes bénéficiaires <ArrowRight className="w-4 h-4" />
-                 </button>
-              </div>
+                    <button className="flex items-center gap-2 text-sm font-bold text-slate-900 hover:opacity-70 mt-auto justify-start">
+                        {droit.action} <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              }) : (
+                <div className="col-span-1 md:col-span-2 text-center py-8 text-gray-500">
+                  Aucun droit oublié détecté basé sur vos réponses actuelles.
+                </div>
+              )}
            </div>
         </div>
 
@@ -151,7 +156,7 @@ const Dashboard = () => {
           <a href="#" className="hover:text-slate-900">Legal Disclosures</a>
         </div>
         <p className="text-xs md:text-sm text-gray-400 text-center px-4">
-          © 2024 RetroAide Financial Services. All rights reserved. Member SIPC.
+          © 2026 RetroAide Financial Services. All rights reserved. Member SIPC.
         </p>
       </footer>
     </div>

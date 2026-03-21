@@ -35,9 +35,6 @@ const OnboardingStep2 = () => {
       {/* Header */}
       <header className="px-6 py-5 flex justify-between items-center bg-white border-b border-slate-100">
         <h1 className="text-[22px] font-extrabold text-[#0f172a] tracking-tight cursor-pointer" onClick={() => navigate('/')}>RetroAide</h1>
-        <button className="text-[14px] font-semibold text-slate-500 hover:text-slate-800 transition-colors">
-          Besoin d'aide ?
-        </button>
       </header>
 
       <main className="flex-grow flex flex-col items-center px-4 pt-10 pb-20">
@@ -148,7 +145,11 @@ const OnboardingStep2 = () => {
               </button>
               <button 
                 disabled={isActive === null}
-                onClick={() => navigate('/onboarding/3')}
+                onClick={() => {
+                  const data = JSON.parse(localStorage.getItem('retroaide_onboarding') || '{}');
+                  localStorage.setItem('retroaide_onboarding', JSON.stringify({ ...data, status, isActive }));
+                  navigate('/onboarding/3');
+                }}
                 className={cn(
                   "w-full md:w-auto flex items-center justify-center gap-3 px-12 py-5 rounded-2xl font-bold text-[18px] transition-all duration-300 shadow-xl",
                   isActive !== null 
@@ -161,23 +162,6 @@ const OnboardingStep2 = () => {
               </button>
             </div>
           </div>
-
-          {/* Help Banner */}
-          <div className="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 flex items-center justify-center mx-auto max-w-[320px]">
-            <div className="flex items-center gap-4">
-              <div className="w-11 h-11 bg-[#0f2444] rounded-xl flex items-center justify-center text-white shadow-inner">
-                <Headphones size={22} strokeWidth={2.5} />
-              </div>
-              <div className="text-left">
-                <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1.5">
-                  BESOIN D'UN CONSEIL ?
-                </p>
-                <p className="text-[14px] font-bold text-[#0f172a] leading-tight">
-                  Parler à un expert RetroAide
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
 
@@ -186,7 +170,7 @@ const OnboardingStep2 = () => {
         <h2 className="text-[24px] font-black text-[#0f172a] mb-8 tracking-tighter">RetroAide</h2>
         <div className="max-w-xl text-center mb-10">
           <p className="text-slate-400 text-[13px] font-medium leading-relaxed">
-            © 2024 RetroAide Financial Services. All rights reserved. Member SIPC. Vos
+            © 2026 RetroAide Financial Services. All rights reserved. Member SIPC. Vos
             données sont sécurisées et cryptées selon les standards bancaires les plus
             élevés.
           </p>

@@ -21,9 +21,6 @@ const Home = () => {
           <button onClick={() => navigate('/glossary')} className="text-xs md:text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
             Glossaire
           </button>
-          <button className="text-xs md:text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-            Get Help
-          </button>
         </div>
       </header>
 
@@ -129,18 +126,10 @@ const Home = () => {
             <a href="#" className="text-xs md:text-sm text-slate-500 hover:text-slate-900">Legal Disclosures</a>
           </div>
           <p className="text-[10px] md:text-xs text-slate-400 text-center px-4">
-            © 2024 RetroAide Financial Services. All rights reserved. Member SIPC.
+            © 2026 RetroAide Financial Services. All rights reserved. Member SIPC.
           </p>
         </div>
       </footer>
-
-      {/* Floating CTA */}
-      <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50">
-        <button className="bg-white shadow-xl md:shadow-2xl rounded-full px-4 py-2.5 md:px-6 md:py-3 flex items-center gap-2 border border-slate-100 hover:scale-105 transition-transform">
-          <Headphones className="w-4 h-4 md:w-5 md:h-5 text-[#0f172a]" />
-          <span className="font-semibold text-xs md:text-sm text-[#0f172a]">Parler à un humain</span>
-        </button>
-      </div>
     </div>
   );
 };

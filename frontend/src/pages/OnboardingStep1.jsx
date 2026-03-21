@@ -4,10 +4,11 @@ import { HelpCircle, ArrowRight, Info } from 'lucide-react';
 
 const OnboardingStep1 = () => {
   const navigate = useNavigate();
-  const [birthYear, setBirthYear] = useState(1975);
+  const [birthYear, setBirthYear] = useState('');
   const [careerStartYear, setCareerStartYear] = useState('');
 
   const handleNext = () => {
+    localStorage.setItem('retroaide_onboarding', JSON.stringify({ birthYear, careerStartYear }));
     navigate('/onboarding/2');
   };
 
@@ -16,9 +17,6 @@ const OnboardingStep1 = () => {
       {/* Top Header */}
       <div className="w-full max-w-5xl flex justify-between items-center mb-12">
         <h1 className="text-2xl font-bold tracking-tight cursor-pointer" onClick={() => navigate('/')}>RetroAide</h1>
-        <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-slate-300 transition-colors">
-          <HelpCircle className="w-6 h-6 text-slate-500" />
-        </div>
       </div>
 
       {/* Progress Section */}
@@ -47,27 +45,15 @@ const OnboardingStep1 = () => {
       <div className="w-full max-w-3xl space-y-6">
         {/* Birth Year Card */}
         <div className="bg-white rounded-[2rem] p-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-50">
-          <h3 className="text-2xl font-bold mb-2">Quelle est votre année de naissance ?</h3>
-          <p className="text-slate-400 text-base mb-12">Utilisez le curseur pour sélectionner l'année.</p>
+          <h3 className="text-2xl font-bold mb-8">Quelle est votre année de naissance ?</h3>
           
-          <div className="relative px-4">
-            <div className="text-center mb-6">
-              <span className="text-[3.5rem] font-bold tracking-tighter">{birthYear}</span>
-            </div>
-            
-            <div className="relative flex items-center">
-              <span className="absolute -left-2 top-8 text-sm font-medium text-slate-400">1950</span>
-              <input
-                type="range"
-                min="1950"
-                max="2005"
-                value={birthYear}
-                onChange={(e) => setBirthYear(parseInt(e.target.value))}
-                className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#0F2544]"
-              />
-              <span className="absolute -right-2 top-8 text-sm font-medium text-slate-400">2005</span>
-            </div>
-          </div>
+          <input
+            type="text"
+            placeholder="Ex: 1975"
+            value={birthYear}
+            onChange={(e) => setBirthYear(e.target.value)}
+            className="w-full p-6 bg-slate-100 rounded-2xl border-none text-xl focus:ring-2 focus:ring-[#0F2544] transition-all placeholder:text-slate-300"
+          />
         </div>
 
         {/* Career Start Card */}

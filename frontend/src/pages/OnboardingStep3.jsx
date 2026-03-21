@@ -13,10 +13,10 @@ const OnboardingStep3 = () => {
   };
 
   const situations = [
-    { id: 'children', label: "J'ai eu des enfants" },
-    { id: 'unemployment', label: "J'ai eu des périodes de chômage" },
-    { id: 'sick_leave', label: "J'ai eu des arrêts maladie longs (+ de 60 jours)" },
-    { id: 'military', label: "J'ai effectué mon service militaire" },
+    { id: 'children', label: "J'ai eu des enfants", tooltip: "Chaque enfant peut vous donner droit à des trimestres supplémentaires pour son éducation." },
+    { id: 'unemployment', label: "J'ai eu des périodes de chômage", tooltip: "Les périodes de chômage indemnisé permettent de valider des trimestres." },
+    { id: 'sick_leave', label: "J'ai eu des arrêts maladie longs (+ de 60 jours)", tooltip: "Un arrêt de travail de plus de 60 jours consécutifs valide 1 trimestre." },
+    { id: 'military', label: "J'ai effectué mon service militaire", tooltip: "La période de service civique ou militaire compte dans votre durée d'assurance." },
   ];
 
   return (
@@ -29,7 +29,6 @@ const OnboardingStep3 = () => {
         </div>
         <div className="flex items-center gap-6">
           <span className="font-semibold text-slate-900 text-sm sm:text-base">Étape 3 sur 3</span>
-          <button className="text-slate-600 hover:text-slate-900 text-sm font-medium">Besoin d'aide ?</button>
         </div>
       </header>
 
@@ -71,7 +70,14 @@ const OnboardingStep3 = () => {
                 </div>
                 <span className="font-medium text-[17px] text-slate-800">{item.label}</span>
               </div>
-              <HelpCircle className="w-5 h-5 text-slate-400 cursor-help hover:text-slate-600" />
+              <div className="relative flex items-center group/tooltip p-2 -m-2">
+                <HelpCircle className="w-5 h-5 text-slate-400 cursor-help group-hover/tooltip:text-slate-600 transition-colors" />
+                <div className="absolute right-0 bottom-full mb-2 hidden group-hover/tooltip:block w-48 sm:w-64 bg-[#0f172a] text-white text-[13px] rounded-xl p-3 shadow-xl z-20 font-normal leading-relaxed cursor-default pointer-events-none origin-bottom animate-in fade-in zoom-in-95 duration-200">
+                  {item.tooltip}
+                  {/* Arrow pointing down */}
+                  <div className="absolute -bottom-1.5 right-3 w-3 h-3 bg-[#0f172a] rotate-45 rounded-sm"></div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -85,28 +91,14 @@ const OnboardingStep3 = () => {
             Retour
           </button>
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => {
+              const data = JSON.parse(localStorage.getItem('retroaide_onboarding') || '{}');
+              localStorage.setItem('retroaide_onboarding', JSON.stringify({ ...data, situations: selectedSituations }));
+              navigate('/dashboard');
+            }}
             className="w-2/3 py-5 bg-[#1e293b] text-white text-lg font-bold rounded-xl shadow-xl hover:bg-[#0f172a] hover:scale-[1.01] active:scale-[0.99] transition-all mb-16"
           >
             Analyser ma situation
-          </button>
-        </div>
-
-        {/* Help/Support Card */}
-        <div className="bg-white border border-slate-100 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 flex flex-col sm:flex-row items-center justify-between gap-8 mb-20">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-blue-50 flex items-center justify-center rounded-2xl">
-              <User className="w-7 h-7 text-blue-500 fill-blue-500/10" />
-            </div>
-            <div>
-              <h3 className="font-bold text-xl text-slate-900 mb-1">Besoin d'aide ?</h3>
-              <p className="text-slate-500 font-medium">
-                Un conseiller RetroAide peut vous accompagner dans cette étape.
-              </p>
-            </div>
-          </div>
-          <button className="whitespace-nowrap px-8 py-4 bg-[#4a636a] hover:bg-[#3d5157] text-white font-bold rounded-2xl shadow-lg transition-all hover:-translate-y-0.5">
-            Parler à un humain
           </button>
         </div>
       </main>
@@ -124,7 +116,7 @@ const OnboardingStep3 = () => {
             <a href="#" className="hover:text-blue-900 transition-colors">Sécurité</a>
           </div>
           <div className="text-sm text-slate-400 font-medium text-center">
-            © 2024 RetroAide Financial Services. All rights reserved. Member SIPC.
+            © 2026 RetroAide Financial Services. All rights reserved. Member SIPC.
           </div>
         </div>
       </footer>
