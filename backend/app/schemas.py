@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 EmploymentStatus = Literal["salarie_prive", "fonctionnaire", "autre"]
 
@@ -19,6 +19,16 @@ class UserProfile(BaseModel):
     had_long_sick_leave: bool = False
     had_military_service: bool = False
     long_part_time_years: bool = False
+
+    @model_validator(mode="after")
+    def check_career_after_birth(self):
+        """Vérifie que la carrière commence après l'âge légal minimum de travail."""
+        if self.career_start_year < self.birth_year + 14:
+            raise ValueError(
+                f"career_start_year ({self.career_start_year}) doit être ≥ birth_year + 14 "
+                f"({self.birth_year + 14})"
+            )
+        return self
     # Document / cas particuliers (optionnel — pour export PDF / fusion)
     full_name: str = Field(default="", max_length=200)
     ville_signature: str = Field(default="", max_length=120)
@@ -41,6 +51,19 @@ class ChecklistItem(BaseModel):
     title: str
     detail: str = ""
     url: str = ""
+
+
+GuidedPhase = Literal["recap", "point_a_clarifier", "prochaine_etape"]
+
+
+class GuidedJourneyStep(BaseModel):
+    """Parcours guidé type assistant : récap → points à clarifier → prochaines étapes."""
+
+    step: int = Field(..., ge=1, le=15)
+    phase: GuidedPhase
+    title: str
+    content: str
+    optional_prompt: str = ""
 
 
 class EnrichmentTraceItem(BaseModel):
@@ -67,6 +90,7 @@ class AnalyzeResponse(BaseModel):
     quarters_remaining: int
     missing_quarters: list[MissingQuarterItem]
     checklist: list[ChecklistItem]
+    guided_journey: list[GuidedJourneyStep]
     enrichment: EnrichmentSection
 
 
@@ -100,6 +124,7 @@ class MarkdownSections(BaseModel):
     synthese: str
     checklist: str
     cas_particuliers: str
+    parcours_guide: str
     document_complet: str
 
 
@@ -118,6 +143,36 @@ class AnalyzeReportResponse(BaseModel):
     analyze: AnalyzeResponse
 
 
+# ---------------------------------------------------------------------------
+# Pipeline chaîné : schémas intermédiaires
+# ---------------------------------------------------------------------------
+
+
+class ComputeResponse(BaseModel):
+    """Sortie de l'étape compute (calculs déterministes + enrichissement open data)."""
+
+    departure_age: int
+    age_taux_plein_auto: int
+    quarters_worked: int
+    quarters_remaining: int
+    enrichment: EnrichmentSection
+    profile: dict[str, Any]
+
+
+class AiAnalyzeRequest(BaseModel):
+    """Entrée de l'étape AI : résultat compute + champs identité optionnels."""
+
+    compute: ComputeResponse
+    # Champs facultatifs pour la génération du rapport complet
+    full_name: str = ""
+    ville_signature: str = ""
+    nb_enfants: Optional[int] = None
+    nb_mois_armee: Optional[int] = None
+    nb_trimestres_avant_20: Optional[int] = None
+    pays_etranger: str = ""
+    montant_estime_euros: Optional[int] = Field(default=None, ge=1)
+
+
 class GlossaryRequest(BaseModel):
     term: str = Field(..., min_length=1, max_length=200)
 
@@ -125,6 +180,3 @@ class GlossaryRequest(BaseModel):
 class GlossaryResponse(BaseModel):
     explanation: str
 
-
-class RetirementContextResponse(EnrichmentSection):
-    """Réponse D4 — même schéma que `enrichment` sur /analyze (debug / orchestrateurs)."""

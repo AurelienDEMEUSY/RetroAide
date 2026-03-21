@@ -5,6 +5,7 @@ from ai.advisor import (
     detect_missing_quarters,
     explain_term,
     generate_checklist,
+    generate_guided_journey,
     synthesize_report_markdown,
 )
 
@@ -57,6 +58,40 @@ def test_explain_term_mock() -> None:
     with patch("ai.advisor.emulate", return_value="  Un trimestre, c’est une unité de cotisation.  "):
         text = explain_term("trimestre")
     assert "trimestre" in text.lower() or "cotisation" in text.lower()
+
+
+def test_generate_guided_journey_mock_normalizes() -> None:
+    raw = [
+        {
+            "step": 2,
+            "phase": "recap",
+            "title": "B",
+            "content": "Texte.",
+            "optional_prompt": "",
+        },
+        {
+            "step": 1,
+            "phase": "prochaine_etape",
+            "title": "A",
+            "content": "Suite.",
+            "optional_prompt": "Continuer ?",
+        },
+    ]
+    with patch("ai.advisor.emulate", return_value=raw):
+        out = generate_guided_journey({}, [], [])
+    assert [x["step"] for x in out] == [1, 2]
+    assert out[0]["title"] == "A"
+
+
+def test_generate_guided_journey_empty_uses_fallback() -> None:
+    with patch("ai.advisor.emulate", return_value=[]):
+        out = generate_guided_journey(
+            {"birth_year": 1955, "career_start_year": 1975},
+            [{"period": "P1", "reason": "r", "action": "a"}],
+            [{"title": "Aller à la caisse", "detail": "d", "url": ""}],
+        )
+    assert len(out) >= 2
+    assert any("1955" in str(s.get("content", "")) for s in out)
 
 
 def test_explain_term_empty_or_error_uses_fallback() -> None:

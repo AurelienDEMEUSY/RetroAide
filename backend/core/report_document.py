@@ -60,6 +60,37 @@ def format_checklist_summary_for_seed(checklist: list[dict[str, str]]) -> str:
     return "\n".join(lines) if lines else "_(Titres d’étapes indisponibles.)_"
 
 
+_PHASE_GUIDE_LABEL: dict[str, str] = {
+    "recap": "Récapitulatif",
+    "point_a_clarifier": "Point à clarifier",
+    "prochaine_etape": "Prochaine étape",
+}
+
+
+def format_guided_journey_markdown(steps: list[dict[str, Any]]) -> str:
+    """Parcours « questions → suite » pour affichage ou PDF (vide si aucune étape)."""
+    if not steps:
+        return ""
+    lines: list[str] = ["## Parcours guidé\n", "_À suivre dans l’ordre ; chaque bloc est volontairement court._\n"]
+    for s in steps:
+        step_n = s.get("step", "")
+        phase = str(s.get("phase", "")).strip()
+        label = _PHASE_GUIDE_LABEL.get(phase, phase or "Étape")
+        title = (s.get("title") or "").strip()
+        content = (s.get("content") or "").strip()
+        op = (s.get("optional_prompt") or "").strip()
+        head = f"### Étape {step_n}"
+        if title:
+            head += f" — {title}"
+        lines.append(head)
+        lines.append(f"*{label}*\n")
+        if content:
+            lines.append(content + "\n")
+        if op:
+            lines.append(f"> _Pour la suite de l’échange : {op}_\n")
+    return "\n".join(lines)
+
+
 def format_checklist_markdown(checklist: list[dict[str, str]]) -> str:
     parts: list[str] = ["## Étapes recommandées\n"]
     for i, c in enumerate(checklist, start=1):
@@ -75,48 +106,7 @@ def format_checklist_markdown(checklist: list[dict[str, str]]) -> str:
     return "\n\n".join(parts)
 
 
-def build_merge_placeholders(
-    *,
-    nom_utilisateur: str,
-    id_dossier: str,
-    ville_signature: str,
-    date_signature: str,
-    age_legal: int,
-    age_taux_plein_auto: int,
-    trimestres_ok: int,
-    trimestres_requis: int,
-    trimestres_restants: int,
-    montant_estime_display: str,
-    nb_enfants_display: str,
-    nb_mois_armee_display: str,
-    nb_trimestres_avant_20_display: str,
-    pays_etranger: str,
-    liste_periodes_manquantes_text: str,
-) -> dict[str, str]:
-    """Clés exactes attendues pour un gabarit type Word/PDF."""
-    return {
-        "[NOM_UTILISATEUR]": nom_utilisateur,
-        "[ID_DOSSIER]": id_dossier,
-        "[VILLE_SIGNATURE]": ville_signature,
-        "[DATE_SIGNATURE]": date_signature,
-        "[AGE_LEGAL]": str(age_legal),
-        "[AGE_TAUX_PLEIN_AUTO]": str(age_taux_plein_auto),
-        "[TRIMESTRES_OK]": str(trimestres_ok),
-        "[TRIMESTRES_REQUIS]": str(trimestres_requis),
-        "[TRIMESTRES_RESTANTS]": str(trimestres_restants),
-        "[MONTANT_ESTIME]": montant_estime_display,
-        "[NB_ENFANTS]": nb_enfants_display,
-        "[NB_MOIS_ARMEE]": nb_mois_armee_display,
-        "[NB_TRIMESTRES_AVANT_20]": nb_trimestres_avant_20_display,
-        "[PAYS_ETRANGER]": pays_etranger or "Non renseigné",
-        "[LISTE_PERIODES_MANQUANTES]": liste_periodes_manquantes_text,
-    }
 
-
-def format_optional_int(value: int | None, *, unset: str = "Non renseigné") -> str:
-    if value is None:
-        return unset
-    return str(value)
 
 
 def build_document_seed_markdown(
@@ -228,8 +218,12 @@ def assemble_document_complet(
     synthese: str,
     checklist_md: str,
     cas_particuliers_md: str,
+    parcours_guide_md: str = "",
 ) -> str:
-    parts = [synthese.rstrip(), "", "---", "", checklist_md.rstrip()]
+    parts = [synthese.rstrip()]
+    if parcours_guide_md.strip():
+        parts.extend(["", "---", "", parcours_guide_md.rstrip()])
+    parts.extend(["", "---", "", checklist_md.rstrip()])
     if cas_particuliers_md.strip():
         parts.extend(["", "---", "", cas_particuliers_md.rstrip()])
     return "\n".join(parts)

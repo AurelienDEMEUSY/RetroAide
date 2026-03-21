@@ -4,20 +4,22 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import Any
 
 from fastapi import APIRouter
 
 from ai.advisor import (
     detect_missing_quarters,
     generate_checklist,
+    generate_guided_journey,
     synthesize_report_markdown,
 )
+from app.converters import enrichment_to_section, tools_summary_text
 from app.schemas import (
     AnalyzeReportResponse,
     AnalyzeResponse,
     ChecklistItem,
-    EnrichmentSection,
-    EnrichmentTraceItem,
+    GuidedJourneyStep,
     IdentitySection,
     KeyFiguresSection,
     MarkdownSections,
@@ -38,16 +40,19 @@ from core.report_document import (
     build_fallback_synthese_markdown,
     format_checklist_markdown,
     format_checklist_summary_for_seed,
+    format_guided_journey_markdown,
     format_missing_periods_markdown,
     format_missing_periods_plain,
     format_special_cases_markdown,
     new_dossier_id,
     today_iso,
 )
-from tools.mcp_pipeline import EnrichmentResult, run_enrichment
+from tools.mcp_pipeline import run_enrichment
 
 router = APIRouter(tags=["analyze"])
 log = logging.getLogger(__name__)
+
+
 
 
 @dataclass(frozen=True)
@@ -60,6 +65,7 @@ class _AnalyzeRun:
     enrichment: EnrichmentResult
     missing_raw: list[dict[str, str]]
     checklist_raw: list[dict[str, str]]
+    journey_raw: list[dict[str, Any]]
 
     @property
     def ctx_block(self) -> str:
@@ -116,6 +122,17 @@ def _run_analyze_pipeline(body: UserProfile) -> _AnalyzeRun:
     checklist_raw = generate_checklist(profile_dict, missing_raw, retrieval_context=enrichment.context_block)
     log.info("[analyze] generate_checklist terminé | %s entrée(s)", len(checklist_raw))
 
+    tools_summary = tools_summary_text(enrichment_to_section(enrichment))
+    log.info("[analyze] appel OpenHosta generate_guided_journey")
+    journey_raw = generate_guided_journey(
+        profile_dict,
+        missing_raw,
+        checklist_raw,
+        retrieval_context=enrichment.context_block,
+        tools_summary=tools_summary,
+    )
+    log.info("[analyze] generate_guided_journey terminé | %s étape(s)", len(journey_raw))
+
     return _AnalyzeRun(
         profile_dict=profile_dict,
         departure_age=departure_age,
@@ -125,24 +142,11 @@ def _run_analyze_pipeline(body: UserProfile) -> _AnalyzeRun:
         enrichment=enrichment,
         missing_raw=missing_raw,
         checklist_raw=checklist_raw,
+        journey_raw=journey_raw,
     )
 
 
-def _enrichment_to_section(er: EnrichmentResult) -> EnrichmentSection:
-    return EnrichmentSection(
-        context_block=er.context_block,
-        sources_touched=list(er.sources_touched),
-        tools=[
-            EnrichmentTraceItem(
-                tool=t.tool,
-                ok=t.ok,
-                sources=list(t.sources),
-                error=t.error,
-                sub_steps=list(t.sub_steps),
-            )
-            for t in er.tools
-        ],
-    )
+
 
 
 def _analyze_response_from_run(run: _AnalyzeRun) -> AnalyzeResponse:
@@ -152,7 +156,8 @@ def _analyze_response_from_run(run: _AnalyzeRun) -> AnalyzeResponse:
         quarters_remaining=run.quarters_remaining,
         missing_quarters=[MissingQuarterItem(**m) for m in run.missing_raw],
         checklist=[ChecklistItem(**c) for c in run.checklist_raw],
-        enrichment=_enrichment_to_section(run.enrichment),
+        guided_journey=[GuidedJourneyStep(**j) for j in run.journey_raw],
+        enrichment=enrichment_to_section(run.enrichment),
     )
 
 
@@ -172,13 +177,12 @@ def post_analyze(body: UserProfile) -> AnalyzeResponse:
     return _analyze_response_from_run(run)
 
 
-@router.post("/analyze/report", response_model=AnalyzeReportResponse)
-def post_analyze_report(body: UserProfile) -> AnalyzeReportResponse:
+def build_analyze_report_response(body: UserProfile) -> AnalyzeReportResponse:
     """
-    Même pipeline que `/analyze`, plus un paquet JSON pour export PDF / MDX :
-    identité, chiffres clés, cas particuliers (source unique), blocs markdown (synthèse LLM + repli).
+    Même pipeline que `POST /analyze/report` : paquet JSON pour export PDF / MDX.
+    Exposé pour réutilisation par le routeur PDF sans dupliquer la logique.
     """
-    log.info("[analyze] début traitement POST /analyze/report")
+    log.info("[analyze] build_analyze_report_response | début")
     run = _run_analyze_pipeline(body)
 
     nom = (body.full_name or "").strip() or "Non renseigné"
@@ -233,7 +237,8 @@ def post_analyze_report(body: UserProfile) -> AnalyzeReportResponse:
             liste_periodes_md=liste_md,
         )
 
-    document_complet = assemble_document_complet(synthese, checklist_md, cas_md)
+    parcours_md = format_guided_journey_markdown(run.journey_raw)
+    document_complet = assemble_document_complet(synthese, checklist_md, cas_md, parcours_md)
 
     core = _analyze_response_from_run(run)
 
@@ -244,7 +249,7 @@ def post_analyze_report(body: UserProfile) -> AnalyzeReportResponse:
     )
 
     return AnalyzeReportResponse(
-        enrichment=_enrichment_to_section(run.enrichment),
+        enrichment=enrichment_to_section(run.enrichment),
         identity=IdentitySection(
             nom_utilisateur=nom,
             id_dossier=dossier_id,
@@ -270,7 +275,18 @@ def post_analyze_report(body: UserProfile) -> AnalyzeReportResponse:
             synthese=synthese,
             checklist=checklist_md,
             cas_particuliers=cas_md,
+            parcours_guide=parcours_md,
             document_complet=document_complet,
         ),
         analyze=core,
     )
+
+
+@router.post("/analyze/report", response_model=AnalyzeReportResponse)
+def post_analyze_report(body: UserProfile) -> AnalyzeReportResponse:
+    """
+    Même pipeline que `/analyze`, plus un paquet JSON pour export PDF / MDX :
+    identité, chiffres clés, cas particuliers (source unique), blocs markdown (synthèse LLM + repli).
+    """
+    log.info("[analyze] début traitement POST /analyze/report")
+    return build_analyze_report_response(body)

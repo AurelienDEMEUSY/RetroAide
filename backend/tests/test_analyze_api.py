@@ -34,6 +34,7 @@ _MINIMAL_BODY = {
 }
 
 
+@patch("app.routers.analyze.generate_guided_journey")
 @patch("app.routers.analyze.generate_checklist")
 @patch("app.routers.analyze.detect_missing_quarters")
 @patch("app.routers.analyze.run_enrichment", return_value=_ENRICHMENT_MOCK)
@@ -41,12 +42,22 @@ def test_post_analyze_returns_expected_shape(
     mock_enrichment: Mock,
     mock_missing: Mock,
     mock_checklist: Mock,
+    mock_journey: Mock,
 ) -> None:
     mock_missing.return_value = [
         {"period": "Chômage 2003", "reason": "Trimestres possibles", "action": "Relevé Pôle emploi"},
     ]
     mock_checklist.return_value = [
         {"title": "Étape 1", "detail": "Faire X", "url": "https://www.info-retraite.fr"},
+    ]
+    mock_journey.return_value = [
+        {
+            "step": 1,
+            "phase": "recap",
+            "title": "Résumé",
+            "content": "Texte.",
+            "optional_prompt": "",
+        }
     ]
 
     response = client.post("/api/v1/analyze", json=_MINIMAL_BODY)
@@ -59,12 +70,15 @@ def test_post_analyze_returns_expected_shape(
     assert data["missing_quarters"][0]["period"] == "Chômage 2003"
     assert len(data["checklist"]) == 1
     assert data["checklist"][0]["title"] == "Étape 1"
+    assert len(data["guided_journey"]) == 1
+    assert data["guided_journey"][0]["phase"] == "recap"
     assert data["enrichment"]["context_block"] == "[contexte test]"
     assert data["enrichment"]["tools"][0]["tool"] == "retroaide_open_data_bundle"
 
     mock_enrichment.assert_called_once()
     mock_missing.assert_called_once()
     mock_checklist.assert_called_once()
+    mock_journey.assert_called_once()
     call_profile = mock_missing.call_args[0][0]
     assert call_profile["birth_year"] == 1963
     assert mock_missing.call_args.kwargs.get("retrieval_context") == "[contexte test]"

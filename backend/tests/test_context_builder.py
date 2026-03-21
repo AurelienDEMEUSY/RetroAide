@@ -7,15 +7,15 @@ import os
 import httpx
 import pytest
 
-from tools.context_builder import build_retirement_context_block
+from tools.enrichment_handlers import summarize_cnav_records, tool_open_data_bundle
 from tools.opendata_client import OpenDataClient
 
 
 def test_build_context_disabled_returns_empty(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ENABLE_OPENDATA_CONTEXT", "false")
-    block, sources = build_retirement_context_block({"birth_year": 1960})
-    assert block == ""
-    assert sources == []
+    out = tool_open_data_bundle({"birth_year": 1960})
+    assert out.context_block == ""
+    assert out.sources_touched == []
 
 
 def test_build_context_with_mock_http(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -39,20 +39,18 @@ def test_build_context_with_mock_http(monkeypatch: pytest.MonkeyPatch) -> None:
     http = httpx.Client(transport=transport, timeout=5.0)
     client = OpenDataClient(client=http)
     try:
-        block, sources = build_retirement_context_block({}, client=client)
+        out = tool_open_data_bundle({}, client=client)
     finally:
         client.close()
 
-    assert "Open data CNAV" in block
-    assert "data.gouv.fr" in block
-    assert any(s.startswith("cnav:") for s in sources)
-    assert "data.gouv:search" in sources
+    assert "Open data CNAV" in out.context_block
+    assert "data.gouv.fr" in out.context_block
+    assert any(s.startswith("cnav:") for s in out.sources_touched)
+    assert "data.gouv:search" in out.sources_touched
 
 
 def test_summarize_handles_flat_cnav_rows() -> None:
-    from tools import context_builder as cb
-
-    text = cb._summarize_cnav_records(  # noqa: SLF001
+    text = summarize_cnav_records(
         {"results": [{"annee": 2020, "x": 1}, "not-a-dict"]},
         max_items=2,
     )

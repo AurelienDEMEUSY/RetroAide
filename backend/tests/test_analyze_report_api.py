@@ -39,6 +39,7 @@ _MINIMAL_BODY = {
 
 
 @patch("app.routers.analyze.synthesize_report_markdown", return_value="")
+@patch("app.routers.analyze.generate_guided_journey")
 @patch("app.routers.analyze.generate_checklist")
 @patch("app.routers.analyze.detect_missing_quarters")
 @patch("app.routers.analyze.run_enrichment", return_value=_REPORT_ENRICHMENT)
@@ -46,6 +47,7 @@ def test_post_analyze_report_returns_structured_and_markdown(
     _enrich: Mock,
     mock_missing: Mock,
     mock_checklist: Mock,
+    mock_journey: Mock,
     _synth: Mock,
 ) -> None:
     mock_missing.return_value = [
@@ -53,6 +55,15 @@ def test_post_analyze_report_returns_structured_and_markdown(
     ]
     mock_checklist.return_value = [
         {"title": "Étape 1", "detail": "Faire X", "url": "https://www.info-retraite.fr"},
+    ]
+    mock_journey.return_value = [
+        {
+            "step": 1,
+            "phase": "recap",
+            "title": "Lecture du dossier",
+            "content": "Nous reprenons vos indications.",
+            "optional_prompt": "",
+        }
     ]
 
     body = {
@@ -85,6 +96,7 @@ def test_post_analyze_report_returns_structured_and_markdown(
 
     assert "#" in data["markdown"]["synthese"]
     assert "## Étapes" in data["markdown"]["checklist"]
+    assert "Parcours guidé" in data["markdown"]["parcours_guide"]
     assert "Cas particuliers" in data["markdown"]["cas_particuliers"]
     assert len(data["markdown"]["document_complet"]) > 50
 
@@ -110,6 +122,7 @@ _EMPTY_ENRICHMENT = EnrichmentResult(
 
 
 @patch("app.routers.analyze.synthesize_report_markdown", return_value="# Synthèse LLM\n\nParagraphe détaillé " + "x" * 80)
+@patch("app.routers.analyze.generate_guided_journey", return_value=[])
 @patch("app.routers.analyze.generate_checklist")
 @patch("app.routers.analyze.detect_missing_quarters")
 @patch("app.routers.analyze.run_enrichment", return_value=_EMPTY_ENRICHMENT)
@@ -117,6 +130,7 @@ def test_post_analyze_report_uses_llm_synthese_when_long_enough(
     _enrich: Mock,
     mock_missing: Mock,
     mock_checklist: Mock,
+    _journey: Mock,
     _synth: Mock,
 ) -> None:
     mock_missing.return_value = []

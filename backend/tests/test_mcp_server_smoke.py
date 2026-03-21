@@ -8,3 +8,4 @@ def test_mcp_server_fastmcp_instance_exists() -> None:
 
     assert srv.mcp is not None
     assert srv.retroaide_open_data_context is not None
+    assert srv.retroaide_llm_plan_open_data_tools is not None

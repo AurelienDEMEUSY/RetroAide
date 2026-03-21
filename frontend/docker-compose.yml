@@ -1,0 +1,11 @@
+services:
+  front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+    container_name: retroaide-front
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

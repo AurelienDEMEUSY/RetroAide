@@ -6,11 +6,12 @@ from __future__ import annotations
 
 import logging
 import os
+import secrets
 from typing import Annotated
 
 from fastapi import APIRouter, Header, HTTPException
 
-from app.schemas import RetirementContextResponse, UserProfile
+from app.schemas import EnrichmentSection, UserProfile
 from tools.mcp_pipeline import run_enrichment
 
 router = APIRouter(tags=["internal"])
@@ -27,15 +28,15 @@ def _require_internal_bearer(authorization: str | None) -> None:
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Authorization Bearer requis.")
     token = authorization.removeprefix("Bearer ").strip()
-    if token != expected:
+    if not secrets.compare_digest(token, expected):
         raise HTTPException(status_code=403, detail="Token interne invalide.")
 
 
-@router.post("/context", response_model=RetirementContextResponse)
+@router.post("/context", response_model=EnrichmentSection)
 def post_retirement_context_preview(
     body: UserProfile,
     authorization: Annotated[str | None, Header()] = None,
-) -> RetirementContextResponse:
+) -> EnrichmentSection:
     """
     Construit le même bloc texte que pour `/analyze` (open data), sans appeler le LLM.
     Utile pour debug, MCP, ou orchestrateurs externes.
@@ -44,4 +45,5 @@ def post_retirement_context_preview(
     log.info("[internal] POST /internal/context — prévisualisation contexte open data")
     profile_dict = body.model_dump()
     er = run_enrichment(profile_dict)
-    return RetirementContextResponse.model_validate(er.to_dict())
+    return EnrichmentSection.model_validate(er.to_dict())
+

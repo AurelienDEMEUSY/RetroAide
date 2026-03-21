@@ -53,9 +53,13 @@ class EnrichmentSubStep:
     source: str
     ok: bool
     error: str | None = None
+    detail: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {"source": self.source, "ok": self.ok, "error": self.error}
+        out: dict[str, Any] = {"source": self.source, "ok": self.ok, "error": self.error}
+        if self.detail:
+            out["detail"] = self.detail
+        return out
 
 
 @dataclass
@@ -110,6 +114,10 @@ def tool_open_data_bundle(
         if disclaimer:
             sections.append(f"[Mention légale contexte]\n{disclaimer}")
 
+        preamble = inventory.get("llm_research_preamble", "").strip()
+        if preamble:
+            sections.append(f"[Recherche multi-sources — cadre pour le conseil]\n{preamble}")
+
         for entry in inventory.get("cnav_datasets", []):
             ds_id = entry["dataset_id"]
             limit = int(entry.get("records_limit", 3))
@@ -136,7 +144,13 @@ def tool_open_data_bundle(
         try:
             raw = http.search_data_gouv_datasets(q, page_size=page_size)
             sources.append(dg_label)
-            sections.append(f"[Jeux data.gouv.fr pour « {q} »]\n{summarize_data_gouv(raw)}")
+            dg_hint = (dg.get("pedagogical_use") or "").strip()
+            dg_intro = (
+                f"[Repère pédagogique — catalogue data.gouv]\n{dg_hint}\n\n" if dg_hint else ""
+            )
+            sections.append(
+                f"{dg_intro}[Jeux data.gouv.fr pour « {q} »]\n{summarize_data_gouv(raw)}"
+            )
             sub_steps.append(EnrichmentSubStep(source=dg_label, ok=True, error=None))
         except Exception as exc:  # noqa: BLE001
             logger.exception("[enrichment] échec recherche data.gouv")

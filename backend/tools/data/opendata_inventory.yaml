@@ -1,5 +1,13 @@
 # D1 — Inventaire sources open data (RetroAide)
 # API CNAV : Explore v2.1 — https://data.cnav.fr/api/explore/v2.1/catalog/datasets/{dataset_id}/records
+#
+# pedagogical_use : repère injecté dans le contexte LLM pour expliquer à quoi sert chaque API (conseil senior).
+# llm_research_preamble : cadre global pour le modèle sur la recherche multi-sources.
+
+llm_research_preamble: >
+  Ce bloc résume des appels réels à des API publiques (portail CNAV Explore, API catalogue data.gouv).
+  Chaque section ci-dessous est étiquetée : utilise-les pour enrichir le conseil (contexte national, transparence),
+  jamais pour simuler le dossier individuel. Si une section est vide ou absente, ne pas inventer de chiffres.
 
 cnav_base_url: "https://data.cnav.fr/api/explore/v2.1/catalog/datasets"
 
