@@ -1,0 +1,161 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Landmark, 
+  Library, 
+  CheckCircle2, 
+  Clock, 
+  ExternalLink, 
+  ArrowRight, 
+  ShieldCheck, 
+  HelpCircle,
+  Database
+} from 'lucide-react';
+
+const Dashboard = () => {
+  return (
+    <div className="min-h-screen bg-[#f3f4f6] font-sans text-slate-900">
+      {/* Navigation */}
+      <nav className="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100">
+        <Link to="/" className="flex items-center gap-2 text-lg md:text-xl font-bold text-[#0f172a] tracking-tight">
+          <Landmark className="w-5 h-5 md:w-6 md:h-6 text-[#0f172a]" />
+          <span>RetroAide</span>
+        </Link>
+        <div className="hidden md:flex items-center gap-12 text-sm font-medium text-slate-600">
+          <Link to="/dashboard" className="relative py-2 text-slate-900 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-slate-900">Plan</Link>
+          <Link to="/glossary" className="hover:text-slate-900">Glossaire</Link>
+          <button className="hover:text-slate-900">Support</button>
+        </div>
+        <div>
+          <button className="text-sm font-semibold hover:underline">Get Help</button>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-12">
+        {/* Hero Section */}
+        <div className="mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+            Synthèse de votre <span className="text-[#818cf8]">Analyse</span>
+          </h1>
+          <p className="text-gray-600 text-lg max-w-2xl leading-relaxed">
+            Voici le bilan actuel de votre carrière. Nos algorithmes ont identifié des opportunités pour optimiser votre date de départ.
+          </p>
+        </div>
+
+        {/* Top Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Card 1: Age Legal */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-56">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-6 antialiased">ÂGE LÉGAL DE DÉPART</p>
+              <h2 className="text-5xl font-bold text-slate-900">64 ans</h2>
+            </div>
+            <div className="flex items-center gap-2 text-green-600 font-medium text-sm">
+              <CheckCircle2 className="w-5 h-5" />
+              <span>Estimation consolidée</span>
+            </div>
+          </div>
+
+          {/* Card 2: Trimesters Validated */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-56">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-6 antialiased uppercase">TRIMESTRES VALIDÉS</p>
+              <h2 className="text-5xl font-bold text-slate-900">128 <span className="text-2xl text-gray-400 font-normal">/ 172</span></h2>
+            </div>
+            <div className="w-full bg-gray-100 h-2.5 rounded-full mt-4 overflow-hidden">
+               <div className="bg-[#a4dcb4] h-full w-[74%] rounded-full"></div>
+            </div>
+          </div>
+
+          {/* Card 3: Trimesters Remaining */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-56">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.15em] text-slate-500 mb-6 antialiased uppercase">TRIMESTRES RESTANTS</p>
+              <h2 className="text-5xl font-bold text-slate-900">44</h2>
+            </div>
+            <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
+              <Clock className="w-5 h-5" />
+              <span>Parcours classique</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Section Potential Rights */}
+        <div className="bg-[#eaedef] rounded-3xl p-6 mb-12">
+           <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-8 pl-4 pt-2">
+              <div className="p-3 bg-slate-900 rounded-xl">
+                 <Database className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">Droits potentiellement oubliés</h3>
+                <p className="text-sm text-gray-600">Analyse IA basée sur votre historique déclaratif</p>
+              </div>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Forgotten Right 1 */}
+              <div className="bg-white p-8 rounded-2xl shadow-sm flex flex-col">
+                 <div className="mb-4 flex-1">
+                    <div className="w-12 h-12 bg-blue-50 text-blue-400 rounded-xl flex items-center justify-center mb-4">
+                       <Clock className="w-6 h-6" />
+                    </div>
+                    <h4 className="text-lg font-bold text-slate-900 mb-2">Période de chômage 2003</h4>
+                    <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                      4 trimestres n'apparaissent pas sur votre relevé actuel. Une attestation Pôle Emploi est requise.
+                    </p>
+                 </div>
+                 <button className="flex items-center gap-2 text-sm font-bold text-slate-900 hover:opacity-70 mt-auto justify-start">
+                    Récupérer l'attestation <ExternalLink className="w-4 h-4" />
+                 </button>
+              </div>
+
+              {/* Forgotten Right 2 */}
+              <div className="bg-white p-8 rounded-2xl shadow-sm flex flex-col">
+                 <div className="mb-4 flex-1">
+                    <div className="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center mb-4">
+                       <HelpCircle className="w-6 h-6" />
+                    </div>
+                    <h4 className="text-lg font-bold text-slate-900 mb-2">Majoration Éducation</h4>
+                    <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                      Vous pourriez bénéficier de 8 trimestres supplémentaires au titre de l'éducation de vos enfants.
+                    </p>
+                 </div>
+                 <button className="flex items-center gap-2 text-sm font-bold text-slate-900 hover:opacity-70 mt-auto justify-start">
+                    Déclarer mes bénéficiaires <ArrowRight className="w-4 h-4" />
+                 </button>
+              </div>
+           </div>
+        </div>
+
+        {/* Final CTA Area */}
+        <div className="flex flex-col items-center justify-center mb-24 text-center">
+          <button className="w-full md:w-auto justify-center bg-[#1e3a5f] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 text-lg hover:bg-slate-800 transition-colors mb-4">
+            Voir mon plan d'action détaillé <ArrowRight className="w-5 h-5" />
+          </button>
+          
+          <div className="bg-white border border-gray-100 rounded-xl px-4 md:px-6 py-3 flex items-center justify-center gap-2 md:gap-3 shadow-sm mx-auto">
+            <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
+            <span className="text-xs md:text-sm font-medium text-gray-600">Données protégées par cryptage bancaire (AES-256)</span>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-50 border-t border-gray-200 py-12 md:py-16 px-4 md:px-8 flex flex-col items-center">
+        <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-4 md:mb-2 text-center">RetroAide Financial Services</h2>
+        <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-gray-500 mb-6 md:mb-8 text-center px-4">
+          <a href="#" className="hover:text-slate-900">Privacy Policy</a>
+          <a href="#" className="hover:text-slate-900">Terms of Service</a>
+          <a href="#" className="hover:text-slate-900">Accessibility Statement</a>
+          <a href="#" className="hover:text-slate-900">Legal Disclosures</a>
+        </div>
+        <p className="text-xs md:text-sm text-gray-400 text-center px-4">
+          © 2024 RetroAide Financial Services. All rights reserved. Member SIPC.
+        </p>
+      </footer>
+    </div>
+  );
+};
+
+export default Dashboard;
