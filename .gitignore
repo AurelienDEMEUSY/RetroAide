@@ -1,0 +1,84 @@
+# --- Secrets & environnement (ne jamais commiter) ---
+.env
+.env.*
+!.env.example
+!.env*.example
+*.pem
+*.key
+secrets/
+
+# --- Python (backend, scripts, outils) ---
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+*.egg
+MANIFEST
+
+# --- Node.js (frontend, dépendances locales) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+.npm/
+
+# --- Builds & sorties ---
+dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+.next/
+out/
+.nuxt/
+.vite/
+
+# --- OS ---
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- IDE & éditeurs ---
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*~
+
+# --- Logs & caches divers ---
+logs/
+*.log
+.cache/
+*.local
+tmp/
+temp/
+
+# --- Docker (fichiers locaux optionnels à la racine) ---
+docker-compose.override.yml
+
+# --- Outils / hackathon ---
+*.sqlite
+*.db-journal
