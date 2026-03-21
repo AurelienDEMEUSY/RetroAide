@@ -41,7 +41,13 @@ def _glossary_fallback(term: str) -> str:
 
 
 def _normalize_missing_quarters(raw: Any) -> list[dict[str, str]]:
+    logger.debug(
+        "[advisor] _normalize_missing_quarters | type=%s | aperçu=%r",
+        type(raw).__name__,
+        (raw[:2] if isinstance(raw, list) and len(raw) > 2 else raw),
+    )
     if not isinstance(raw, list):
+        logger.warning("[advisor] missing_quarters: attendu une list, reçu %s", type(raw).__name__)
         return []
     out: list[dict[str, str]] = []
     for item in raw:
@@ -55,11 +61,18 @@ def _normalize_missing_quarters(raw: Any) -> list[dict[str, str]]:
         if not row["period"] and not row["reason"] and not row["action"]:
             continue
         out.append(row)
+    logger.debug("[advisor] _normalize_missing_quarters → %s entrée(s) valide(s)", len(out))
     return out
 
 
 def _normalize_checklist(raw: Any) -> list[dict[str, str]]:
+    logger.debug(
+        "[advisor] _normalize_checklist | type=%s | len=%s",
+        type(raw).__name__,
+        len(raw) if isinstance(raw, list) else "n/a",
+    )
     if not isinstance(raw, list):
+        logger.warning("[advisor] checklist: attendu une list, reçu %s", type(raw).__name__)
         return []
     out: list[dict[str, str]] = []
     for item in raw:
@@ -78,6 +91,7 @@ def _normalize_checklist(raw: Any) -> list[dict[str, str]]:
                     "url": str(item.get("url", item.get("link", ""))).strip(),
                 }
             )
+    logger.debug("[advisor] _normalize_checklist → %s entrée(s)", len(out))
     return out
 
 
@@ -88,12 +102,20 @@ def detect_missing_quarters(profile: dict) -> list[dict[str, str]]:
 
     Retour : liste de dicts avec clés period, reason, action — français simple.
     """
+    logger.info(
+        "[advisor] detect_missing_quarters | clés profil=%s",
+        list(profile.keys()),
+    )
     _ = profile  # fourni au modèle via inspection OpenHosta
     try:
+        logger.debug("[advisor] detect_missing_quarters → appel emulate()")
         raw = emulate()
-        return _normalize_missing_quarters(raw)
+        logger.debug("[advisor] detect_missing_quarters ← emulate() type=%s", type(raw).__name__)
+        normalized = _normalize_missing_quarters(raw)
+        logger.info("[advisor] detect_missing_quarters | résultat final: %s item(s)", len(normalized))
+        return normalized
     except Exception as exc:  # noqa: BLE001 — fallback hackathon
-        logger.warning("detect_missing_quarters: %s", exc)
+        logger.exception("[advisor] detect_missing_quarters | échec emulate → liste vide")
         return []
 
 
@@ -105,15 +127,27 @@ def generate_checklist(
     Produit 5 à 10 étapes concrètes, ordonnées, en français simple, avec liens d’administration
     quand ils sont connus.
     """
+    logger.info(
+        "[advisor] generate_checklist | missing_quarters en entrée=%s | clés profil=%s",
+        len(missing_quarters),
+        list(profile.keys()),
+    )
     _ = (profile, missing_quarters)
     try:
+        logger.debug("[advisor] generate_checklist → appel emulate()")
         raw = emulate()
+        logger.debug("[advisor] generate_checklist ← emulate() type=%s", type(raw).__name__)
         normalized = _normalize_checklist(raw)
         if not normalized:
+            logger.warning(
+                "[advisor] generate_checklist | normalisation vide → FALLBACK_CHECKLIST (%s étapes)",
+                len(FALLBACK_CHECKLIST),
+            )
             return list(FALLBACK_CHECKLIST)
+        logger.info("[advisor] generate_checklist | résultat final: %s étape(s)", len(normalized))
         return normalized
     except Exception as exc:  # noqa: BLE001
-        logger.warning("generate_checklist: %s", exc)
+        logger.exception("[advisor] generate_checklist | échec emulate → FALLBACK | err=%s", exc)
         return list(FALLBACK_CHECKLIST)
 
 
@@ -122,13 +156,18 @@ def explain_term(term: str) -> str:
     Explique un terme de retraite en français très simple, max 3 phrases, sans jargon,
     pour une personne de 65 ans sans formation juridique.
     """
+    logger.info("[advisor] explain_term | terme=%r", term)
     _ = term
     try:
+        logger.debug("[advisor] explain_term → appel emulate()")
         raw = emulate()
+        logger.debug("[advisor] explain_term ← emulate() type=%s", type(raw).__name__)
         text = str(raw).strip() if raw is not None else ""
         if not text:
+            logger.warning("[advisor] explain_term | réponse vide → fallback générique")
             return _glossary_fallback(term)
+        logger.info("[advisor] explain_term | OK | longueur=%s", len(text))
         return text
     except Exception as exc:  # noqa: BLE001
-        logger.warning("explain_term: %s", exc)
+        logger.exception("[advisor] explain_term | échec emulate → fallback")
         return _glossary_fallback(term)

@@ -23,6 +23,7 @@ Renseigner au minimum :
 
 - `OPENHOSTA_DEFAULT_MODEL_API_KEY` — clé API du modèle distant (voir [OpenHosta — Option B](https://github.com/hand-e-fr/OpenHosta#option-b-remote-api-openai)).
 - `CORS_ORIGINS` — origine du front Next.js (ex. `http://localhost:3000`).
+- `LOG_LEVEL` — verbosité des logs applicatifs (`DEBUG`, `INFO`, `WARNING`…). Par défaut **DEBUG** : chaque requête, calculs, appels advisor et erreurs apparaissent sur **stdout** (visible avec `docker compose logs -f`).
 
 Les appels LLM du produit passent par **`ai/advisor.py`** (`detect_missing_quarters`, `generate_checklist`, `explain_term`) via `emulate()`. Le fichier **`ai/config.py`** charge `.env` avant l’import d’OpenHosta.
 
@@ -30,7 +31,8 @@ Les appels LLM du produit passent par **`ai/advisor.py`** (`detect_missing_quart
 
 ```bash
 pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# optionnel : export LOG_LEVEL=DEBUG
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --log-level debug
 ```
 
 - **Documentation interactive (Swagger UI)** : [http://localhost:8000/docs](http://localhost:8000/docs)
