@@ -44,6 +44,28 @@ Le répertoire `backend/` est la racine pytest (`pythonpath` dans `pyproject.tom
 pytest tests/ -v
 ```
 
+## Docker (image backend)
+
+Contexte de build : répertoire **`backend/`** (pas la racine du monorepo).
+
+```bash
+# depuis la racine du dépôt RetroAide
+docker build -t retroaide-api ./backend
+```
+
+Lancer le conteneur (passer la clé et CORS au runtime, **ne pas** baker `.env` dans l’image) :
+
+```bash
+docker run --rm -p 8000:8000 \
+  -e OPENHOSTA_DEFAULT_MODEL_API_KEY="votre-clé" \
+  -e OPENHOSTA_DEFAULT_MODEL_NAME="gpt-4.1" \
+  -e CORS_ORIGINS="http://localhost:3000" \
+  retroaide-api
+```
+
+- **Swagger** : [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Front (personne B)** : définir `NEXT_PUBLIC_API_URL=http://localhost:8000` pour que le navigateur appelle l’API sur la machine hôte. Si le front tourne aussi dans Docker sans reverse proxy, ajuster `CORS_ORIGINS` pour l’origine réelle du front (ex. `http://localhost:3000`).
+
 ## Structure prévue
 
 Voir `CLAUDE.md` à la racine du dépôt (piste A — backend).
