@@ -26,15 +26,18 @@ _REPORT_ENRICHMENT = EnrichmentResult(
 )
 
 _MINIMAL_BODY = {
+    "birth_month": 1,
     "birth_year": 1963,
-    "career_start_year": 1982,
-    "status": "salarie_prive",
+    "marital_status": "celibataire",
+    "nb_enfants": 2,
+    "professional_statuses": ["salarie_prive"],
+    "career_start_age": "avant_20",
+    "career_breaks": [],
     "currently_employed": False,
-    "had_children": True,
-    "had_unemployment": True,
-    "had_long_sick_leave": False,
-    "had_military_service": False,
-    "long_part_time_years": False,
+    "current_income_annual": 35000,
+    "validated_quarters": 160,
+    "main_objective": "partir_tot",
+    "target_departure_age": 63,
 }
 
 

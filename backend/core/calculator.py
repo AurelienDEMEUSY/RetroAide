@@ -25,11 +25,20 @@ def calculate_departure_age(birth_year: int) -> int:
         return 62
 
 
-def estimate_quarters_worked(start_work_year: int, *, reference_year: int = 2026) -> int:
+def estimate_quarters_worked(career_start_age: str, birth_year: int, *, reference_year: int = 2026) -> int:
     """
     Estimation brute : 4 trimestres par an entre début de carrière et année de référence, plafonnée à 172.
     ``reference_year`` permet de figer les tests (PRD utilise 2026).
     """
+    age_map = {
+        "avant_16": 15,
+        "avant_18": 17,
+        "avant_20": 19,
+        "avant_21": 20,
+        "apres_21": 22,
+        "": 22
+    }
+    start_work_year = birth_year + age_map.get(career_start_age, 22)
     years = reference_year - start_work_year
     if years < 0:
         return 0

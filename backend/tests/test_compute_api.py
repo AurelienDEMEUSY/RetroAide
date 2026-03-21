@@ -26,15 +26,18 @@ _ENRICHMENT_MOCK = EnrichmentResult(
 )
 
 _MINIMAL_BODY = {
+    "birth_month": 1,
     "birth_year": 1963,
-    "career_start_year": 1982,
-    "status": "salarie_prive",
+    "marital_status": "celibataire",
+    "nb_enfants": 2,
+    "professional_statuses": ["salarie_prive"],
+    "career_start_age": "avant_20",
+    "career_breaks": [],
     "currently_employed": False,
-    "had_children": True,
-    "had_unemployment": True,
-    "had_long_sick_leave": False,
-    "had_military_service": False,
-    "long_part_time_years": False,
+    "current_income_annual": 35000,
+    "validated_quarters": 160,
+    "main_objective": "partir_tot",
+    "target_departure_age": 63,
 }
 
 
@@ -53,11 +56,11 @@ def test_post_compute_returns_expected_shape(_mock_enrich) -> None:
     assert data["enrichment"]["tools"][0]["tool"] == "retroaide_open_data_bundle"
     # Le profil est inclus pour chaînage
     assert data["profile"]["birth_year"] == 1963
-    assert data["profile"]["career_start_year"] == 1982
+    assert data["profile"]["career_start_age"] == "avant_20"
 
 
 @patch("app.routers.compute.run_enrichment", return_value=_ENRICHMENT_MOCK)
 def test_post_compute_validation_error_on_bad_body(_mock_enrich) -> None:
-    bad = {**_MINIMAL_BODY, "status": "invalide"}
+    bad = {**_MINIMAL_BODY, "professional_statuses": ["invalide"]}
     response = client.post("/api/v1/compute", json=bad)
     assert response.status_code == 422

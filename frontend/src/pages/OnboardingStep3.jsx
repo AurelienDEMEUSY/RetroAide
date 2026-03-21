@@ -1,23 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Landmark, HelpCircle, Check, User } from 'lucide-react';
+import { Landmark, ArrowLeft, ArrowRight, ThumbsUp, Ban } from 'lucide-react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
 
 const OnboardingStep3 = () => {
   const navigate = useNavigate();
-  const [selectedSituations, setSelectedSituations] = useState([]);
+  const [currentlyEmployed, setCurrentlyEmployed] = useState(null);
+  const [currentIncomeAnnual, setCurrentIncomeAnnual] = useState('');
+  const [validatedQuarters, setValidatedQuarters] = useState('');
 
-  const toggleSituation = (id) => {
-    setSelectedSituations((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  const canProceed = currentlyEmployed !== null && currentIncomeAnnual !== '' && validatedQuarters !== '';
+
+  const handleNext = () => {
+    const data = JSON.parse(localStorage.getItem('retroaide_onboarding') || '{}');
+    localStorage.setItem('retroaide_onboarding', JSON.stringify({ 
+      ...data, 
+      currentlyEmployed, 
+      currentIncomeAnnual: parseInt(currentIncomeAnnual, 10) || 0, 
+      validatedQuarters: parseInt(validatedQuarters, 10) || 0 
+    }));
+    navigate('/onboarding/4');
   };
-
-  const situations = [
-    { id: 'children', label: "J'ai eu des enfants", tooltip: "Chaque enfant peut vous donner droit à des trimestres supplémentaires pour son éducation." },
-    { id: 'unemployment', label: "J'ai eu des périodes de chômage", tooltip: "Les périodes de chômage indemnisé permettent de valider des trimestres." },
-    { id: 'sick_leave', label: "J'ai eu des arrêts maladie longs (+ de 60 jours)", tooltip: "Un arrêt de travail de plus de 60 jours consécutifs valide 1 trimestre." },
-    { id: 'military', label: "J'ai effectué mon service militaire", tooltip: "La période de service civique ou militaire compte dans votre durée d'assurance." },
-  ];
 
   return (
     <div className="min-h-screen bg-slate-50/30 font-sans text-slate-900 flex flex-col">
@@ -26,9 +34,6 @@ const OnboardingStep3 = () => {
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
           <Landmark className="w-5 h-5 text-slate-800" />
           <span className="font-bold text-xl tracking-tight">RetroAide</span>
-        </div>
-        <div className="flex items-center gap-6">
-          <span className="font-semibold text-slate-900 text-sm sm:text-base">Étape 3 sur 4</span>
         </div>
       </header>
 
@@ -44,83 +49,116 @@ const OnboardingStep3 = () => {
 
         {/* Title Section */}
         <div className="mb-12 text-center sm:text-left">
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-5">Situations Particulières</h1>
+          <span className="text-sm font-bold text-slate-400 uppercase tracking-widest block mb-3">ÉTAPE 3 SUR 4</span>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-5 tracking-tight">Votre Bilan Actuel</h1>
           <p className="text-slate-600 text-lg leading-relaxed max-w-2xl">
-            Certaines étapes de votre vie influencent le calcul de votre retraite. 
-            Sélectionnez celles qui vous concernent.
+            Regardez votre dernier Relevé de Situation Individuelle (RIS) pour remplir ces informations.
           </p>
         </div>
 
-        {/* Situations List */}
-        <div className="space-y-4 mb-12">
-          {situations.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => toggleSituation(item.id)}
-              className="group flex items-center justify-between p-6 bg-[#f8fafc] hover:bg-slate-100/80 rounded-xl cursor-pointer transition-all border border-transparent hover:border-slate-200"
-            >
-              <div className="flex items-center gap-5">
-                <div 
-                  className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
-                    selectedSituations.includes(item.id) 
-                      ? 'bg-slate-900 border-slate-900' 
-                      : 'border-slate-300'
-                  }`}
-                >
-                  <Check className={`w-4 h-4 transition-opacity ${selectedSituations.includes(item.id) ? 'text-white opacity-100' : 'text-slate-300 opacity-40'}`} />
-                </div>
-                <span className="font-medium text-[17px] text-slate-800">{item.label}</span>
-              </div>
-              <div className="relative flex items-center group/tooltip p-2 -m-2">
-                <HelpCircle className="w-5 h-5 text-slate-400 cursor-help group-hover/tooltip:text-slate-600 transition-colors" />
-                <div className="absolute right-0 bottom-full mb-2 hidden group-hover/tooltip:block w-48 sm:w-64 bg-[#0f172a] text-white text-[13px] rounded-xl p-3 shadow-xl z-20 font-normal leading-relaxed cursor-default pointer-events-none origin-bottom animate-in fade-in zoom-in-95 duration-200">
-                  {item.tooltip}
-                  {/* Arrow pointing down */}
-                  <div className="absolute -bottom-1.5 right-3 w-3 h-3 bg-[#0f172a] rotate-45 rounded-sm"></div>
-                </div>
+        <div className="bg-white rounded-[2rem] p-8 sm:p-10 shadow-sm border border-slate-100 mb-12 space-y-12">
+
+          {/* Currently Employed */}
+          <div>
+            <h3 className="text-xl font-bold text-[#0f172a] mb-5 tracking-tight">
+              Êtes-vous actuellement en activité ?
+            </h3>
+            <div className="grid grid-cols-2 gap-5">
+              <button
+                onClick={() => setCurrentlyEmployed(true)}
+                className={cn(
+                  "flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all duration-300 font-bold text-[16px]",
+                  currentlyEmployed === true
+                    ? "border-[#0f172a] bg-[#f8fafc] text-[#0f172a]"
+                    : "border-transparent bg-slate-50 text-slate-600 hover:bg-slate-100"
+                )}
+              >
+                <ThumbsUp size={20} strokeWidth={2.5} />
+                Oui
+              </button>
+              <button
+                onClick={() => setCurrentlyEmployed(false)}
+                className={cn(
+                  "flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all duration-300 font-bold text-[16px]",
+                  currentlyEmployed === false
+                    ? "border-[#0f172a] bg-[#f8fafc] text-[#0f172a]"
+                    : "border-transparent bg-slate-50 text-slate-600 hover:bg-slate-100"
+                )}
+              >
+                <Ban size={20} strokeWidth={2.5} />
+                Non
+              </button>
+            </div>
+          </div>
+
+          {/* Exact Annual Income */}
+          {currentlyEmployed !== null && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+              <h3 className="text-xl font-bold text-[#0f172a] mb-2 tracking-tight">
+                {currentlyEmployed 
+                  ? "Votre revenu brut annuel actuel" 
+                  : "Le salaire moyen de vos 25 meilleures années"}
+              </h3>
+              <p className="text-sm text-slate-500 mb-5 font-medium">
+                Veuillez indiquer le montant exact annuel (brut) en euros.
+              </p>
+              <div className="relative w-full sm:w-1/2">
+                <input
+                  type="number"
+                  placeholder="Ex: 45000"
+                  min="0"
+                  value={currentIncomeAnnual}
+                  onChange={(e) => setCurrentIncomeAnnual(e.target.value)}
+                  className="w-full p-5 pr-12 bg-slate-50 rounded-xl border border-slate-200 text-xl font-medium focus:ring-2 focus:ring-[#0f172a] transition-all placeholder:text-slate-300"
+                />
+                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">€</span>
               </div>
             </div>
-          ))}
+          )}
+
+          {/* Validated Quarters */}
+          <div>
+            <h3 className="text-xl font-bold text-[#0f172a] mb-5 tracking-tight">
+              Nombre de trimestres validés à ce jour
+            </h3>
+            <input
+              type="number"
+              placeholder="Ex: 110"
+              min="0"
+              value={validatedQuarters}
+              onChange={(e) => setValidatedQuarters(e.target.value)}
+              className="w-full sm:w-1/2 p-5 bg-slate-50 rounded-xl border border-slate-200 text-xl font-medium focus:ring-2 focus:ring-[#0f172a] transition-all placeholder:text-slate-300"
+            />
+            <p className="text-sm text-slate-500 mt-3 font-medium">
+              Ce nombre figure sur votre dernier relevé de carrière.
+            </p>
+          </div>
         </div>
 
         {/* Action Button */}
         <div className="px-2 sm:px-0 flex gap-4">
           <button
             onClick={() => navigate('/onboarding/2')}
-            className="w-1/3 py-5 bg-white border-2 border-[#1e293b] text-[#1e293b] text-lg font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all mb-16"
+            className="w-1/3 py-5 bg-white border-2 border-slate-200 text-slate-600 text-lg font-bold rounded-xl shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-all mb-16 flex items-center justify-center gap-2"
           >
+            <ArrowLeft className="w-5 h-5" />
             Retour
           </button>
           <button
-            onClick={() => {
-              const data = JSON.parse(localStorage.getItem('retroaide_onboarding') || '{}');
-              localStorage.setItem('retroaide_onboarding', JSON.stringify({ ...data, situations: selectedSituations }));
-              navigate('/onboarding/4');
-            }}
-            className="w-2/3 py-5 bg-[#1e293b] text-white text-lg font-bold rounded-xl shadow-xl hover:bg-[#0f172a] hover:scale-[1.01] active:scale-[0.99] transition-all mb-16"
+            disabled={!canProceed}
+            onClick={handleNext}
+            className={cn(
+              "w-2/3 py-5 text-white text-lg font-bold rounded-xl transition-all mb-16 flex items-center justify-center gap-2",
+              canProceed
+                ? "bg-[#1e293b] shadow-xl hover:bg-[#0f172a] hover:scale-[1.01] active:scale-[0.99]"
+                : "bg-slate-300 text-slate-500 cursor-not-allowed"
+            )}
           >
             Continuer
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="w-full py-16 px-6 bg-slate-50 mt-auto border-t border-slate-100">
-        <div className="max-w-6xl mx-auto flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
-            <Landmark className="w-6 h-6 text-slate-800" />
-            <span className="font-bold text-2xl tracking-tight text-blue-900">RetroAide</span>
-          </div>
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 mb-8 text-[15px] font-medium text-slate-600/80">
-            <a href="#" className="hover:text-blue-900 transition-colors">Politique de confidentialité</a>
-            <a href="#" className="hover:text-blue-900 transition-colors">Conditions d'utilisation</a>
-            <a href="#" className="hover:text-blue-900 transition-colors">Sécurité</a>
-          </div>
-          <div className="text-sm text-slate-400 font-medium text-center">
-            © 2026 RetroAide Financial Services. All rights reserved. Member SIPC.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

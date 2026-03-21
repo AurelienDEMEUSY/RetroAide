@@ -18,6 +18,32 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+  const buildPayload = (onboarding) => ({
+    birth_month: parseInt(onboarding.birthMonth || 1, 10),
+    birth_year: parseInt(onboarding.birthYear || 1970, 10),
+    marital_status: onboarding.maritalStatus || 'celibataire',
+    nb_enfants: parseInt(onboarding.nbEnfants || 0, 10),
+    professional_statuses: 
+      (onboarding.professionalStatuses && onboarding.professionalStatuses.length > 0) 
+        ? onboarding.professionalStatuses 
+        : ['salarie_prive'],
+    career_start_age: onboarding.careerStartAge || 'apres_21',
+    career_breaks: onboarding.careerBreaks || [],
+    currently_employed: onboarding.currentlyEmployed !== false,
+    current_income_annual: onboarding.currentIncomeAnnual ? parseInt(onboarding.currentIncomeAnnual, 10) : null,
+    validated_quarters: parseInt(onboarding.validatedQuarters || 0, 10),
+    main_objective: onboarding.mainObjective || 'partir_tot',
+    target_departure_age: onboarding.targetDepartureAge ? parseInt(onboarding.targetDepartureAge, 10) : null,
+    
+    full_name: onboarding.fullName || "",
+    ville_signature: onboarding.villeSignature || "",
+    // Fallbacks or legacy optional fields
+    nb_mois_armee: onboarding.nbMoisArmee ? parseInt(onboarding.nbMoisArmee, 10) : null,
+    nb_trimestres_avant_20: onboarding.nbTrimestresAvant20 ? parseInt(onboarding.nbTrimestresAvant20, 10) : null,
+    pays_etranger: onboarding.paysEtranger || "",
+    montant_estime_euros: onboarding.montantEstime ? parseInt(onboarding.montantEstime, 10) : null
+  });
+
   const handleDownloadPdf = async () => {
     try {
       setIsGeneratingPdf(true);
@@ -27,31 +53,7 @@ const Dashboard = () => {
       if (!onboardingStr) throw new Error("No onboarding data found");
       
       const onboarding = JSON.parse(onboardingStr);
-      let statusPayload = 'autre';
-      if (onboarding.status === 'salarie' || onboarding.status === 'salarie_prive') {
-        statusPayload = 'salarie_prive';
-      } else if (onboarding.status === 'fonctionnaire') {
-        statusPayload = 'fonctionnaire';
-      }
-      
-      const payload = {
-        birth_year: parseInt(onboarding.birthYear || 1970, 10),
-        career_start_year: parseInt(onboarding.careerStartYear || 1990, 10),
-        status: statusPayload,
-        currently_employed: onboarding.isActive === true,
-        had_children: onboarding.situations?.includes('children') || false,
-        had_unemployment: onboarding.situations?.includes('unemployment') || false,
-        had_long_sick_leave: onboarding.situations?.includes('sick_leave') || false,
-        had_military_service: onboarding.situations?.includes('military') || false,
-        long_part_time_years: false,
-        full_name: onboarding.fullName || "",
-        ville_signature: onboarding.villeSignature || "",
-        nb_enfants: onboarding.nbEnfants ? parseInt(onboarding.nbEnfants, 10) : null,
-        nb_mois_armee: onboarding.nbMoisArmee ? parseInt(onboarding.nbMoisArmee, 10) : null,
-        nb_trimestres_avant_20: onboarding.nbTrimestresAvant20 ? parseInt(onboarding.nbTrimestresAvant20, 10) : null,
-        pays_etranger: onboarding.paysEtranger || "",
-        montant_estime_euros: onboarding.montantEstime ? parseInt(onboarding.montantEstime, 10) : null
-      };
+      const payload = buildPayload(onboarding);
       
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       
@@ -100,24 +102,7 @@ const Dashboard = () => {
         }
         
         const onboarding = JSON.parse(onboardingStr);
-        let statusPayload = 'autre';
-        if (onboarding.status === 'salarie' || onboarding.status === 'salarie_prive') {
-          statusPayload = 'salarie_prive';
-        } else if (onboarding.status === 'fonctionnaire') {
-          statusPayload = 'fonctionnaire';
-        }
-        
-        const payload = {
-          birth_year: parseInt(onboarding.birthYear || 1970, 10),
-          career_start_year: parseInt(onboarding.careerStartYear || 1990, 10),
-          status: statusPayload,
-          currently_employed: onboarding.isActive === true,
-          had_children: onboarding.situations?.includes('children') || false,
-          had_unemployment: onboarding.situations?.includes('unemployment') || false,
-          had_long_sick_leave: onboarding.situations?.includes('sick_leave') || false,
-          had_military_service: onboarding.situations?.includes('military') || false,
-          long_part_time_years: false
-        };
+        const payload = buildPayload(onboarding);
         
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         const response = await fetch(`${apiUrl}/api/v1/analyze`, {

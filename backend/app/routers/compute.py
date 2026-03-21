@@ -27,7 +27,7 @@ def run_compute(body: UserProfile) -> ComputeResponse:
 
     departure_age = calculate_departure_age(body.birth_year)
     age_taux = statutory_full_rate_age(body.birth_year)
-    q_worked = estimate_quarters_worked(body.career_start_year)
+    q_worked = estimate_quarters_worked(body.career_start_age, body.birth_year)
     q_remaining = quarters_remaining(q_worked, trimestres_requis=TRIMESTRES_REQUIS_TAUX_PLEIN)
 
     enrichment = run_enrichment(profile_dict)

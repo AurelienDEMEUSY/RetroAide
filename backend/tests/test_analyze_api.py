@@ -22,15 +22,18 @@ _ENRICHMENT_MOCK = EnrichmentResult(
 )
 
 _MINIMAL_BODY = {
+    "birth_month": 1,
     "birth_year": 1963,
-    "career_start_year": 1982,
-    "status": "salarie_prive",
+    "marital_status": "celibataire",
+    "nb_enfants": 2,
+    "professional_statuses": ["salarie_prive"],
+    "career_start_age": "avant_20",
+    "career_breaks": [],
     "currently_employed": False,
-    "had_children": True,
-    "had_unemployment": True,
-    "had_long_sick_leave": False,
-    "had_military_service": False,
-    "long_part_time_years": False,
+    "current_income_annual": 35000,
+    "validated_quarters": 160,
+    "main_objective": "partir_tot",
+    "target_departure_age": 63,
 }
 
 
@@ -86,6 +89,6 @@ def test_post_analyze_returns_expected_shape(
 
 
 def test_post_analyze_validation_error_on_bad_status() -> None:
-    bad = {**_MINIMAL_BODY, "status": "invalide"}
+    bad = {**_MINIMAL_BODY, "professional_statuses": ["invalide"]}
     response = client.post("/api/v1/analyze", json=bad)
     assert response.status_code == 422

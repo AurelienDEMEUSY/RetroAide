@@ -125,8 +125,8 @@ def build_document_seed_markdown(
     lines = [
         "# Données factuelles (ne pas inventer d’autres chiffres)",
         f"- Année de naissance : {profile.get('birth_year')}",
-        f"- Début de carrière (année) : {profile.get('career_start_year')}",
-        f"- Statut : {profile.get('status')}",
+        f"- Tranche d'âge de début de carrière : {profile.get('career_start_age')}",
+        f"- Statuts professionnels : {', '.join(profile.get('professional_statuses', []))}",
         f"- Âge légal de départ (modèle simplifié) : {age_legal} ans",
         f"- Âge de taux plein sans décote liée à l’âge (modèle simplifié) : {age_taux_plein} ans",
         f"- Trimestres estimés (relevé à confirmer) : {trimestres_ok}",

@@ -6,38 +6,36 @@ from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
-EmploymentStatus = Literal["salarie_prive", "fonctionnaire", "autre"]
-
+MaritalStatus = Literal["marie", "pacse", "celibataire", "divorce", "veuf"]
+ProfessionalStatus = Literal["salarie_prive", "fonctionnaire", "independant", "liberale", "agriculteur"]
+CareerStartAge = Literal["avant_16", "avant_18", "avant_20", "avant_21", "apres_21", ""]
+CareerBreak = Literal["chomage", "maladie", "invalidite", "etranger", "parental"]
+MainObjective = Literal["partir_tot", "retraite_max", "lever_pied", "augmenter_revenus", ""]
 
 class UserProfile(BaseModel):
+    birth_month: int = Field(..., ge=1, le=12)
     birth_year: int = Field(..., ge=1900, le=2100)
-    career_start_year: int = Field(..., ge=1900, le=2100)
-    status: EmploymentStatus
+    marital_status: MaritalStatus
+    nb_enfants: int = Field(default=0, ge=0, le=15)
+    
+    professional_statuses: list[ProfessionalStatus] = Field(default_factory=list)
+    career_start_age: CareerStartAge
+    career_breaks: list[CareerBreak] = Field(default_factory=list)
+    
     currently_employed: bool
-    had_children: bool = False
-    had_unemployment: bool = False
-    had_long_sick_leave: bool = False
-    had_military_service: bool = False
-    long_part_time_years: bool = False
+    current_income_annual: Optional[int] = Field(default=None, ge=0)
+    validated_quarters: int = Field(default=0, ge=0, le=300)
+    
+    main_objective: MainObjective
+    target_departure_age: Optional[int] = Field(default=None, ge=50, le=80)
 
-    @model_validator(mode="after")
-    def check_career_after_birth(self):
-        """Vérifie que la carrière commence après l'âge légal minimum de travail."""
-        if self.career_start_year < self.birth_year + 14:
-            raise ValueError(
-                f"career_start_year ({self.career_start_year}) doit être ≥ birth_year + 14 "
-                f"({self.birth_year + 14})"
-            )
-        return self
     # Document / cas particuliers (optionnel — pour export PDF / fusion)
     full_name: str = Field(default="", max_length=200)
     ville_signature: str = Field(default="", max_length=120)
-    # Bornes volontairement serrées (usage pédagogique / hackathon, pas extrêmes absurdes)
-    nb_enfants: Optional[int] = Field(default=None, ge=0, le=15)
     nb_mois_armee: Optional[int] = Field(default=None, ge=0, le=120)
+    # kept for compatibility with pdf generation payload if needed
     nb_trimestres_avant_20: Optional[int] = Field(default=None, ge=0, le=24)
     pays_etranger: str = Field(default="", max_length=2000)
-    # Omettre le champ ou null = non renseigné ; 0 € n’est pas accepté (évite confusion avec « vide »)
     montant_estime_euros: Optional[int] = Field(default=None, ge=1)
 
 

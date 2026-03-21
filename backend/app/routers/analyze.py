@@ -75,17 +75,15 @@ class _AnalyzeRun:
 def _run_analyze_pipeline(body: UserProfile) -> _AnalyzeRun:
     profile_dict = body.model_dump()
     log.debug(
-        "[analyze] profil reçu (aperçu non exhaustif): birth_year=%s career_start=%s status=%s "
-        "employed=%s flags={children:%s chômage:%s arrêt_long:%s militaire:%s temps_partiel:%s}",
+        "[analyze] profil reçu (aperçu non exhaustif): birth_year=%s career_start_age=%s statuses=%s "
+        "employed=%s enfants=%s breaks=%s marital_status=%s",
         body.birth_year,
-        body.career_start_year,
-        body.status,
+        body.career_start_age,
+        body.professional_statuses,
         body.currently_employed,
-        body.had_children,
-        body.had_unemployment,
-        body.had_long_sick_leave,
-        body.had_military_service,
-        body.long_part_time_years,
+        body.nb_enfants,
+        body.career_breaks,
+        body.marital_status,
     )
 
     log.debug("[analyze] étape calculator: calculate_departure_age(%s)", body.birth_year)
@@ -94,8 +92,8 @@ def _run_analyze_pipeline(body: UserProfile) -> _AnalyzeRun:
 
     age_taux = statutory_full_rate_age(body.birth_year)
 
-    log.debug("[analyze] étape calculator: estimate_quarters_worked(%s)", body.career_start_year)
-    quarters_worked = estimate_quarters_worked(body.career_start_year)
+    log.debug("[analyze] étape calculator: estimate_quarters_worked(%s, %s)", body.career_start_age, body.birth_year)
+    quarters_worked = estimate_quarters_worked(body.career_start_age, body.birth_year)
     log.debug("[analyze] → quarters_worked=%s", quarters_worked)
 
     log.debug("[analyze] étape calculator: quarters_remaining(%s)", quarters_worked)
@@ -200,8 +198,8 @@ def build_analyze_report_response(body: UserProfile) -> AnalyzeReportResponse:
         nb_mois_armee=body.nb_mois_armee,
         nb_trimestres_avant_20=body.nb_trimestres_avant_20,
         pays_etranger=body.pays_etranger,
-        had_children=body.had_children,
-        had_military_service=body.had_military_service,
+        had_children=(body.nb_enfants > 0),
+        had_military_service=(body.nb_mois_armee is not None and body.nb_mois_armee > 0),
     )
 
     seed = build_document_seed_markdown(
