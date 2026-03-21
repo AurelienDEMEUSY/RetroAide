@@ -36,6 +36,8 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ## Tests
 
+Le répertoire `backend/` est la racine pytest (`pythonpath` dans `pyproject.toml`).
+
 ```bash
 pytest tests/ -v
 ```

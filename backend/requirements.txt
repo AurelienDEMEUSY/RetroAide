@@ -1,0 +1,2 @@
+# Vérifié via safety-mcp (latest_secure / recommandé) — mars 2026
+pytest==9.0.2
