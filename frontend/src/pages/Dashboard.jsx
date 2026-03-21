@@ -15,6 +15,141 @@ import {
 const Dashboard = () => {
   const [simulationData, setSimulationData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      setError(null);
+      
+      const onboardingStr = localStorage.getItem('retroaide_onboarding');
+      if (!onboardingStr) throw new Error("No onboarding data found");
+      
+      const onboarding = JSON.parse(onboardingStr);
+      let statusPayload = 'autre';
+      if (onboarding.status === 'salarie' || onboarding.status === 'salarie_prive') {
+        statusPayload = 'salarie_prive';
+      } else if (onboarding.status === 'fonctionnaire') {
+        statusPayload = 'fonctionnaire';
+      }
+      
+      const payload = {
+        birth_year: parseInt(onboarding.birthYear || 1970, 10),
+        career_start_year: parseInt(onboarding.careerStartYear || 1990, 10),
+        status: statusPayload,
+        currently_employed: onboarding.isActive === true,
+        had_children: onboarding.situations?.includes('children') || false,
+        had_unemployment: onboarding.situations?.includes('unemployment') || false,
+        had_long_sick_leave: onboarding.situations?.includes('sick_leave') || false,
+        had_military_service: onboarding.situations?.includes('military') || false,
+        long_part_time_years: false
+      };
+      
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      
+      const reportRes = await fetch(`${apiUrl}/api/v1/analyze/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!reportRes.ok) throw new Error("Erreur génération rapport");
+      const reportData = await reportRes.json();
+      
+      const pdfRes = await fetch(`${apiUrl}/api/v1/report/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reportData)
+      });
+      if (!pdfRes.ok) throw new Error("Erreur génération PDF");
+      
+      const blob = await pdfRes.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "retroaide-rapport.pdf";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+    } catch(err) {
+      console.error(err);
+      setError("Erreur lors de la génération du PDF. " + err.message);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const onboardingStr = localStorage.getItem('retroaide_onboarding');
+        if (!onboardingStr) {
+          throw new Error("No onboarding data found");
+        }
+        
+        const onboarding = JSON.parse(onboardingStr);
+        let statusPayload = 'autre';
+        if (onboarding.status === 'salarie' || onboarding.status === 'salarie_prive') {
+          statusPayload = 'salarie_prive';
+        } else if (onboarding.status === 'fonctionnaire') {
+          statusPayload = 'fonctionnaire';
+        }
+        
+        const payload = {
+          birth_year: parseInt(onboarding.birthYear || 1970, 10),
+          career_start_year: parseInt(onboarding.careerStartYear || 1990, 10),
+          status: statusPayload,
+          currently_employed: onboarding.isActive === true,
+          had_children: onboarding.situations?.includes('children') || false,
+          had_unemployment: onboarding.situations?.includes('unemployment') || false,
+          had_long_sick_leave: onboarding.situations?.includes('sick_leave') || false,
+          had_military_service: onboarding.situations?.includes('military') || false,
+          long_part_time_years: false
+        };
+        
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/v1/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+        
+        const responseData = await response.json();
+        
+        setSimulationData({
+          ageLegal: responseData.departure_age,
+          trimestresValides: responseData.quarters_worked,
+          trimestresRestants: responseData.quarters_remaining,
+          trimestresRequis: responseData.quarters_worked + responseData.quarters_remaining,
+          droitsOublies: (responseData.missing_quarters || []).map(mq => ({
+            type: mq.period,
+            description: mq.reason,
+            action: mq.action,
+            icon: 'HelpCircle',
+            color: 'blue'
+          })),
+          isMocked: false
+        });
+        
+      } catch (err) {
+        console.error("Dashboard analysis error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAnalysis();
+  }, []);
 
   // Fallback defaults without API
   const data = simulationData || {
@@ -27,6 +162,16 @@ const Dashboard = () => {
   };
 
   const trimestresPercent = Math.round((data.trimestresValides / data.trimestresRequis) * 100) || 0;
+
+  if (loading && !simulationData) {
+    return (
+      <div className="min-h-screen bg-[#f3f4f6] font-sans text-slate-900 flex flex-col items-center justify-center">
+        <Loader2 className="w-16 h-16 text-[#818cf8] animate-spin mb-6" />
+        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Analyse de votre carrière en cours...</h2>
+        <p className="text-slate-500 mt-3 max-w-md text-center">Nos algorithmes croisent vos données <br/> avec la législation actuelle.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] font-sans text-slate-900">
@@ -52,6 +197,11 @@ const Dashboard = () => {
           <p className="text-gray-600 text-lg max-w-2xl leading-relaxed">
             Voici le bilan actuel de votre carrière. Nos algorithmes ont identifié des opportunités pour optimiser votre date de départ.
           </p>
+          {error && (
+            <div className="mt-4 p-4 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl text-sm max-w-2xl">
+              <strong>Note:</strong> Impossible de contacter nos serveurs pour une analyse précise ({error}). Les données affichées ci-dessous sont un exemple standard.
+            </div>
+          )}
         </div>
 
         {/* Top Cards Grid */}
@@ -135,8 +285,16 @@ const Dashboard = () => {
 
         {/* Final CTA Area */}
         <div className="flex flex-col items-center justify-center mb-24 text-center">
-          <button className="w-full md:w-auto justify-center bg-[#1e3a5f] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 text-lg hover:bg-slate-800 transition-colors mb-4">
-            Voir mon plan d'action détaillé <ArrowRight className="w-5 h-5" />
+          <button 
+            onClick={handleDownloadPdf}
+            disabled={isGeneratingPdf}
+            className="w-full md:w-auto justify-center bg-[#1e3a5f] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 text-lg hover:bg-slate-800 transition-colors mb-4 disabled:bg-slate-400"
+          >
+            {isGeneratingPdf ? (
+              <><Loader2 className="w-5 h-5 animate-spin" /> Génération en cours...</>
+            ) : (
+              <>Télécharger mon plan d'action PDF <ArrowRight className="w-5 h-5" /></>
+            )}
           </button>
           
           <div className="bg-white border border-gray-100 rounded-xl px-4 md:px-6 py-3 flex items-center justify-center gap-2 md:gap-3 shadow-sm mx-auto">

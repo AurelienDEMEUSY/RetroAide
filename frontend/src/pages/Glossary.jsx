@@ -1,9 +1,43 @@
-import React from 'react';
-import { Search, User, Calendar, CheckCircle, TrendingDown, Building2, FileText, Plus, Headphones, Landmark } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, User, Calendar, CheckCircle, TrendingDown, Building2, FileText, Plus, Headphones, Landmark, Loader2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Glossary = () => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchTerm.trim()) return;
+    
+    try {
+      setIsSearching(true);
+      setError(null);
+      setSearchResult(null);
+      
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/v1/glossary`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ term: searchTerm })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erreur serveur: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setSearchResult(data);
+    } catch (err) {
+      console.error(err);
+      setError("Impossible de charger la définition pour ce terme.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const terms = [
     {
@@ -59,6 +93,26 @@ const Glossary = () => {
           <p className="text-lg text-gray-500 max-w-lg leading-relaxed mx-auto md:mx-0">
             Retrouvez ici les définitions simples des termes de la retraite. Nous décryptons pour vous le jargon administratif pour une transition sereine.
           </p>
+          <form onSubmit={handleSearch} className="mt-8 flex items-center max-w-lg mx-auto md:mx-0 relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block w-full pl-11 pr-32 py-4 bg-white border border-gray-200 rounded-2xl text-base placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm"
+              placeholder="Ex: Carrière longue, Minimum contributif..."
+            />
+            <button
+              type="submit"
+              disabled={isSearching || !searchTerm.trim()}
+              className="absolute inset-y-2 right-2 flex items-center justify-center px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-medium rounded-xl transition-colors"
+            >
+              {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Chercher'}
+            </button>
+          </form>
+          {error && <p className="text-rose-500 text-sm mt-2">{error}</p>}
         </div>
         <div className="flex-1 w-full max-w-lg">
           <div className="relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl md:rotate-2 hover:rotate-0 transition-transform duration-500">
@@ -70,6 +124,23 @@ const Glossary = () => {
           </div>
         </div>
       </section>
+
+      {/* Search Result */}
+      {searchResult && (
+        <section className="max-w-7xl mx-auto px-6 pb-6 w-full">
+          <div className="bg-indigo-50 border border-indigo-100 rounded-[2rem] p-8 shadow-sm">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-indigo-600 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md">
+                <Search className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 capitalize">{searchTerm}</h3>
+            </div>
+            <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
+              {searchResult.explanation}
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Glossary Grid */}
       <section className="max-w-7xl mx-auto px-6 py-12 md:py-16 w-full">
