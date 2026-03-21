@@ -48,12 +48,25 @@ pytest tests/ -v
 
 Contexte de build : répertoire **`backend/`** (pas la racine du monorepo).
 
+### Compose (recommandé)
+
+Depuis **`backend/`**, avec un fichier **`.env`** (copie de `.env.example`, clé API renseignée) :
+
+```bash
+cd backend
+cp -n .env.example .env   # puis éditer .env
+docker compose up --build
+```
+
+- **Swagger** : [http://localhost:8000/docs](http://localhost:8000/docs)
+- Arrêt : `Ctrl+C` ou `docker compose down`
+
+### Image seule (`docker build` / `docker run`)
+
 ```bash
 # depuis la racine du dépôt RetroAide
 docker build -t retroaide-api ./backend
 ```
-
-Lancer le conteneur (passer la clé et CORS au runtime, **ne pas** baker `.env` dans l’image) :
 
 ```bash
 docker run --rm -p 8000:8000 \
@@ -63,8 +76,7 @@ docker run --rm -p 8000:8000 \
   retroaide-api
 ```
 
-- **Swagger** : [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Front (personne B)** : définir `NEXT_PUBLIC_API_URL=http://localhost:8000` pour que le navigateur appelle l’API sur la machine hôte. Si le front tourne aussi dans Docker sans reverse proxy, ajuster `CORS_ORIGINS` pour l’origine réelle du front (ex. `http://localhost:3000`).
+- **Front (personne B)** : `NEXT_PUBLIC_API_URL=http://localhost:8000`. Si le front est dans Docker, adapter `CORS_ORIGINS` à l’origine réelle (ex. `http://localhost:3000`).
 
 ## Structure prévue
 
