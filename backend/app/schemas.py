@@ -39,3 +39,11 @@ class AnalyzeResponse(BaseModel):
     quarters_remaining: int
     missing_quarters: list[MissingQuarterItem]
     checklist: list[ChecklistItem]
+
+
+class GlossaryRequest(BaseModel):
+    term: str = Field(..., min_length=1, max_length=200)
+
+
+class GlossaryResponse(BaseModel):
+    explanation: str

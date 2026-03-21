@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import analyze
+from app.routers import analyze, glossary
 
 
 def _cors_origins() -> list[str]:
@@ -24,3 +24,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(analyze.router, prefix="/api/v1")
+app.include_router(glossary.router, prefix="/api/v1")
