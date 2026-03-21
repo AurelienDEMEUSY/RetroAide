@@ -15,8 +15,23 @@ from typing import Any, BinaryIO, Union
 
 from fpdf import FPDF
 
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
+
 logger = logging.getLogger(__name__)
 
+def get_watermark_font_path() -> str | None:
+    """Renvoie le chemin de la police locale du projet pour le filigrane."""
+    import os
+    font_path = os.path.join(os.path.dirname(__file__), "fonts", "Roboto-Medium.ttf")
+    if os.path.exists(font_path):
+        return font_path
+    
+    logger.warning("Police de filigrane introuvable dans backend/core/fonts/")
+    return None
 
 def sanitize(text: Any) -> str:
     """Remplace les caractères Unicode non supportés par fpdf2 (latin-1)."""
@@ -53,19 +68,45 @@ class FactureRetraitePDF(FPDF):
         super().__init__()
         self.nom_utilisateur = sanitize(nom_utilisateur)
         self.id_dossier = sanitize(id_dossier)
+        self._watermark_img = None
+        
+        if HAS_PIL:
+            font_path = get_watermark_font_path()
+            if font_path:
+                text = f"CONFIDENTIEL - {self.nom_utilisateur}"
+                try:
+                    font = ImageFont.truetype(font_path, 150)
+                    dummy = Image.new("RGBA", (1, 1), (0,0,0,0))
+                    d = ImageDraw.Draw(dummy)
+                    try:
+                        bbox = d.textbbox((0, 0), text, font=font)
+                        w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+                    except AttributeError:
+                        w, h = d.textsize(text, font=font)
+                    img = Image.new("RGBA", (int(w)+40, int(h)+40), (255,255,255,0))
+                    d2 = ImageDraw.Draw(img)
+                    d2.text((20, 20), text, font=font, fill=(245, 245, 245, 255))
+                    self._watermark_img = img
+                except Exception as e:
+                    logger.warning(f"Erreur de rendu du filigrane image: {e}")
 
     def header(self) -> None:
         """En-tête avec filigrane confidentiel et titre ou référence dossier."""
-        # Filigrane
-        self.set_font("helvetica", "B", 50)
-        self.set_text_color(245, 245, 245)
-        # Rendre le texte non sélectionnable / non interactif
-        self._out("/Artifact <</Subtype /Watermark /Type /Pagination>> BDC")
-        with self.local_context(fill_opacity=1.0):
-            with self.rotation(45, x=105, y=148):
-                self.text(x=10, y=120, text=f"CONFIDENTIEL - {self.nom_utilisateur}")
-                self.text(x=-30, y=210, text=f"CONFIDENTIEL - {self.nom_utilisateur}")
-        self._out("EMC")
+        if getattr(self, "_watermark_img", None):
+            with self.local_context(fill_opacity=1.0):
+                with self.rotation(45, x=105, y=148):
+                    # Image invisible à la sélection
+                    self.image(self._watermark_img, x=10, y=105, h=17.6, keep_aspect_ratio=True)
+                    self.image(self._watermark_img, x=-30, y=195, h=17.6, keep_aspect_ratio=True)
+        else:
+            self.set_font("helvetica", "B", 50)
+            self.set_text_color(245, 245, 245)
+            self._out("/Artifact <</Subtype /Watermark /Type /Pagination>> BDC")
+            with self.local_context(fill_opacity=1.0):
+                with self.rotation(45, x=105, y=148):
+                    self.text(x=10, y=120, text=f"CONFIDENTIEL - {self.nom_utilisateur}")
+                    self.text(x=-30, y=210, text=f"CONFIDENTIEL - {self.nom_utilisateur}")
+            self._out("EMC")
 
         if self.page_no() == 1:
             self._render_first_page_header()
