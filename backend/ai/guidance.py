@@ -47,9 +47,10 @@ FORMAT_SORTIE_CHECKLIST = (
 )
 
 FORMAT_SYNTHESE_MARKDOWN = (
-    "DOCUMENT MARKDOWN : titres ##, paragraphes courts, listes à puces. Rappeler en une phrase que ce texte "
-    "complète mais ne remplace pas les outils et conseillers officiels. Ne pas recopier des tableaux de chiffres "
-    "bruts : les reformuler en langage humain pour un senior."
+    "DOCUMENT MARKDOWN : Tu dois générer directement un modèle ou exemple de contrat de Plan d'Épargne Retraite (PER) personnalisé. "
+    "Il ne s'agit pas de donner des conseils avec des avertissements ou des gardes-fous, mais de rédiger un véritable document formel "
+    "(Titre, nom des parties, clauses, type de PER choisi). Utilise le profil de la personne pour remplir les champs appropriés "
+    "(ex: âge cible de départ, statut pro, éventuelles sorties en capital) et base-toi sur le contexte PER fourni."
 )
 
 FORMAT_GLOSSAIRE = (

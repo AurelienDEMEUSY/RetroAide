@@ -11,6 +11,10 @@ ProfessionalStatus = Literal["salarie_prive", "fonctionnaire", "independant", "l
 CareerStartAge = Literal["avant_16", "avant_18", "avant_20", "avant_21", "apres_21", ""]
 CareerBreak = Literal["chomage", "maladie", "invalidite", "etranger", "parental"]
 MainObjective = Literal["partir_tot", "retraite_max", "lever_pied", "augmenter_revenus", ""]
+PerGestionType = Literal["pilotee", "libre", "a_definir", ""]
+PerFormeSortie = Literal["capital", "rente", "mixte", "a_definir", ""]
+PerOptionFiscale = Literal["deductible", "non_deductible", "a_decider", ""]
+PerBooleanOptions = Literal["oui", "non", "je_ne_sais_pas", ""]
 
 class UserProfile(BaseModel):
     birth_month: int = Field(..., ge=1, le=12)
@@ -37,6 +41,16 @@ class UserProfile(BaseModel):
     nb_trimestres_avant_20: Optional[int] = Field(default=None, ge=0, le=24)
     pays_etranger: str = Field(default="", max_length=2000)
     montant_estime_euros: Optional[int] = Field(default=None, ge=1)
+
+    # Nouveaux champs pour la génération du Contrat PER spécifique
+    per_organisme: Optional[str] = Field(default="", max_length=500)
+    per_versement_mensuel: Optional[int] = Field(default=None, ge=0)
+    per_versement_ponctuel: Optional[int] = Field(default=None, ge=0)
+    per_gestion_type: Optional[PerGestionType] = Field(default="")
+    per_forme_sortie: Optional[PerFormeSortie] = Field(default="")
+    per_option_fiscale: Optional[PerOptionFiscale] = Field(default="")
+    per_plan_entreprise: Optional[PerBooleanOptions] = Field(default="")
+    per_anciens_contrats: Optional[PerBooleanOptions] = Field(default="")
 
 
 class MissingQuarterItem(BaseModel):

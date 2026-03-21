@@ -214,7 +214,16 @@ def build_analyze_report_response(body: UserProfile) -> AnalyzeReportResponse:
         checklist_summary=checklist_seed,
     )
 
-    synthese = synthesize_report_markdown(seed, retrieval_context=run.ctx_block)
+    import os
+    per_context_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "per_context.md")
+    per_context = ""
+    if os.path.exists(per_context_path):
+        with open(per_context_path, "r", encoding="utf-8") as f:
+            per_context = f.read()
+    
+    combined_ctx = f"{run.ctx_block}\n\n=== CONTEXTE EXPERT PER ===\n{per_context}" if per_context else run.ctx_block
+
+    synthese = synthesize_report_markdown(seed, retrieval_context=combined_ctx)
     montant_line = (
         f"{montant} € / mois (déclaratif utilisateur)"
         if montant is not None

@@ -40,6 +40,41 @@ def retroaide_open_data_context(profile: dict) -> dict:
     return tool_open_data_bundle(profile).to_dict()
 
 
+@mcp.tool()
+def retroaide_scrape_webpage(url: str) -> dict:
+    """
+    Extrait le texte brut d'une page Web spécifiée.
+    Utile pour récupérer des informations dynamiques de sources externes de manière adhoc.
+    Retour : dict contenant l'URL, le texte extrait et le statut.
+    """
+    import httpx
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError:
+        return {"url": url, "error": "BeautifulSoup non installé (bs4).", "status": "error"}
+
+    logger.info(f"[mcp] tool retroaide_scrape_webpage | url={url}")
+    try:
+        with httpx.Client(timeout=10.0, follow_redirects=True) as client:
+            resp = client.get(url)
+            resp.raise_for_status()
+            
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            # Retrait des balises non-pertinentes au texte
+            for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
+                tag.decompose()
+            text = " ".join(soup.stripped_strings)
+            
+            return {
+                "url": url,
+                "content": text[:10000],  # Limite pour éviter les surcharges de contexte texte trop larges
+                "status": "success"
+            }
+    except Exception as e:
+        logger.exception("[mcp] erreur récupération webpage %s", url)
+        return {"url": url, "error": str(e), "status": "error"}
+
+
 def main() -> None:
     mcp.run()
 

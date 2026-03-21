@@ -37,6 +37,17 @@ const Dashboard = () => {
     
     full_name: onboarding.fullName || "",
     ville_signature: onboarding.villeSignature || "",
+    
+    // Nouvelles données de formulaire PER (Step 5)
+    per_organisme: onboarding.perOrganisme || '',
+    per_versement_mensuel: onboarding.perVersementMensuel ? parseInt(onboarding.perVersementMensuel, 10) : null,
+    per_versement_ponctuel: onboarding.perVersementPonctuel ? parseInt(onboarding.perVersementPonctuel, 10) : null,
+    per_gestion_type: onboarding.perGestionType || '',
+    per_forme_sortie: onboarding.perFormeSortie || '',
+    per_option_fiscale: onboarding.perOptionFiscale || '',
+    per_plan_entreprise: onboarding.perPlanEntreprise || '',
+    per_anciens_contrats: onboarding.perAnciensContrats || '',
+
     // Fallbacks or legacy optional fields
     nb_mois_armee: onboarding.nbMoisArmee ? parseInt(onboarding.nbMoisArmee, 10) : null,
     nb_trimestres_avant_20: onboarding.nbTrimestresAvant20 ? parseInt(onboarding.nbTrimestresAvant20, 10) : null,

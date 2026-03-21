@@ -8,3 +8,4 @@ httpx==0.28.1
 PyYAML==6.0.3
 mcp==1.26.0
 fpdf2==2.8.7
+beautifulsoup4==4.12.3

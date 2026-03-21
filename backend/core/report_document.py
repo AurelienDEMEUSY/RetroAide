@@ -123,7 +123,7 @@ def build_document_seed_markdown(
 ) -> str:
     """Contenu structuré minimal passé au LLM pour générer la synthèse (pas d’invention de chiffres)."""
     lines = [
-        "# Données factuelles (ne pas inventer d’autres chiffres)",
+        "# Données factuelles Personnelles",
         f"- Année de naissance : {profile.get('birth_year')}",
         f"- Tranche d'âge de début de carrière : {profile.get('career_start_age')}",
         f"- Statuts professionnels : {', '.join(profile.get('professional_statuses', []))}",
@@ -132,7 +132,17 @@ def build_document_seed_markdown(
         f"- Trimestres estimés (relevé à confirmer) : {trimestres_ok}",
         f"- Trimestres requis (référence produit) : {trimestres_requis}",
         f"- Trimestres restants à acquérir : {trimestres_restants}",
-        f"- Montant estimé déclaré par l’utilisateur : {montant_estime if montant_estime is not None else 'non fourni'}",
+        f"- Montant estimé déclaré : {montant_estime if montant_estime is not None else 'non fourni'}",
+        "",
+        "# Données factuelles Projet PER (Valeurs exactes saisies par le client pour le contrat)",
+        f"- Organisme gestionnaire souhaité : {profile.get('per_organisme') or 'À déterminer'}",
+        f"- Versement mensuel prévu : {profile.get('per_versement_mensuel') or 'À déterminer'} €",
+        f"- Versement ponctuel prévu : {profile.get('per_versement_ponctuel') or 'À déterminer'} €",
+        f"- Type de gestion : {profile.get('per_gestion_type', 'a_definir')}",
+        f"- Forme de sortie envisagée : {profile.get('per_forme_sortie', 'a_definir')}",
+        f"- Option fiscale choisie : {profile.get('per_option_fiscale', 'a_decider')}",
+        f"- Présence d'un plan PER entreprise : {profile.get('per_plan_entreprise', 'je_ne_sais_pas')}",
+        f"- Anciens contrats à transférer : {profile.get('per_anciens_contrats', 'je_ne_sais_pas')}",
         "",
         "## Périodes à creuser",
         liste_periodes_md,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Landmark, ArrowLeft, CheckCircle2, Target, HandCoins, ArrowDownToLine, TrendingUp } from 'lucide-react';
+import { Landmark, ArrowLeft, ArrowRight, Target, HandCoins, ArrowDownToLine, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -35,7 +35,7 @@ const OnboardingStep4 = () => {
       fullName,
       villeSignature
     }));
-    navigate('/dashboard');
+    navigate('/onboarding/5');
   };
 
   return (
@@ -55,12 +55,13 @@ const OnboardingStep4 = () => {
           <div className="h-1.5 flex-1 bg-[#c2f3d6] rounded-full"></div>
           <div className="h-1.5 flex-1 bg-[#c2f3d6] rounded-full"></div>
           <div className="h-1.5 flex-1 bg-[#c2f3d6] rounded-full"></div>
-          <div className="h-1.5 flex-1 bg-[#c2f3d6] rounded-full"></div>
+          <div className="h-1.5 flex-1 bg-[#0f2444] rounded-full shadow-[0_0_10px_rgba(15,36,68,0.3)]"></div>
+          <div className="h-1.5 flex-1 bg-slate-200 rounded-full"></div>
         </div>
 
         {/* Title Section */}
         <div className="mb-12 text-center sm:text-left">
-          <span className="text-sm font-bold text-slate-400 uppercase tracking-widest block mb-3">ÉTAPE 4 SUR 4</span>
+          <span className="text-sm font-bold text-slate-400 uppercase tracking-widest block mb-3">ÉTAPE 4 SUR 5</span>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-5 tracking-tight">Vos Objectifs</h1>
           <p className="text-slate-600 text-lg leading-relaxed max-w-2xl">
             L'IA a besoin de savoir ce que vous voulez pour cibler ses conseils.
@@ -177,8 +178,8 @@ const OnboardingStep4 = () => {
                 : "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none hover:translate-y-0"
             )}
           >
-            Analyser ma situation
-            <CheckCircle2 className="w-5 h-5 text-[#93e1b4]" />
+            Suivant
+            <ArrowRight className="w-5 h-5 text-white" />
           </button>
         </div>
       </main>
