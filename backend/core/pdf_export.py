@@ -59,10 +59,13 @@ class FactureRetraitePDF(FPDF):
         # Filigrane
         self.set_font("helvetica", "B", 50)
         self.set_text_color(245, 245, 245)
+        # Rendre le texte non sélectionnable / non interactif
+        self._out("/Artifact <</Subtype /Watermark /Type /Pagination>> BDC")
         with self.local_context(fill_opacity=1.0):
             with self.rotation(45, x=105, y=148):
                 self.text(x=10, y=120, text=f"CONFIDENTIEL - {self.nom_utilisateur}")
                 self.text(x=-30, y=210, text=f"CONFIDENTIEL - {self.nom_utilisateur}")
+        self._out("EMC")
 
         if self.page_no() == 1:
             self._render_first_page_header()
