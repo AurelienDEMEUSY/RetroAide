@@ -5,6 +5,7 @@ from ai.advisor import (
     detect_missing_quarters,
     explain_term,
     generate_checklist,
+    synthesize_report_markdown,
 )
 
 
@@ -44,6 +45,12 @@ def test_generate_checklist_on_error_uses_fallback() -> None:
     with patch("ai.advisor.emulate", side_effect=ConnectionError):
         out = generate_checklist({}, [])
     assert out == FALLBACK_CHECKLIST
+
+
+def test_synthesize_report_markdown_mock() -> None:
+    with patch("ai.advisor.emulate", return_value="# Titre\n\nCorps du rapport."):
+        text = synthesize_report_markdown("seed", retrieval_context="ctx")
+    assert text.startswith("# Titre")
 
 
 def test_explain_term_mock() -> None:

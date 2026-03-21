@@ -95,18 +95,22 @@ def _normalize_checklist(raw: Any) -> list[dict[str, str]]:
     return out
 
 
-def detect_missing_quarters(profile: dict) -> list[dict[str, str]]:
+def detect_missing_quarters(profile: dict, retrieval_context: str = "") -> list[dict[str, str]]:
     """
     Analyse le profil carrière (France, régime général simplifié) et identifie des périodes
     pouvant générer des trimestres souvent oubliés ou mal déclarés (enfants, chômage, arrêts longs, etc.).
 
+    Si retrieval_context est non vide, il contient des extraits open data (CNAV / data.gouv) : t'en
+    servir uniquement comme contexte statistique national, pas comme dossier individuel.
+
     Retour : liste de dicts avec clés period, reason, action — français simple.
     """
     logger.info(
-        "[advisor] detect_missing_quarters | clés profil=%s",
+        "[advisor] detect_missing_quarters | clés profil=%s | contexte_open_data=%s caractères",
         list(profile.keys()),
+        len(retrieval_context or ""),
     )
-    _ = profile  # fourni au modèle via inspection OpenHosta
+    _ = (profile, retrieval_context)  # fourni au modèle via inspection OpenHosta
     try:
         logger.debug("[advisor] detect_missing_quarters → appel emulate()")
         raw = emulate()
@@ -122,17 +126,23 @@ def detect_missing_quarters(profile: dict) -> list[dict[str, str]]:
 def generate_checklist(
     profile: dict,
     missing_quarters: list[dict[str, str]],
+    retrieval_context: str = "",
 ) -> list[dict[str, str]]:
     """
     Produit 5 à 10 étapes concrètes, ordonnées, en français simple, avec liens d’administration
     quand ils sont connus.
+
+    retrieval_context : statistiques officielles agrégées (open data) — citer avec prudence,
+    ne pas en déduire un montant de pension personnel.
     """
     logger.info(
-        "[advisor] generate_checklist | missing_quarters en entrée=%s | clés profil=%s",
+        "[advisor] generate_checklist | missing_quarters en entrée=%s | clés profil=%s | "
+        "contexte_open_data=%s caractères",
         len(missing_quarters),
         list(profile.keys()),
+        len(retrieval_context or ""),
     )
-    _ = (profile, missing_quarters)
+    _ = (profile, missing_quarters, retrieval_context)
     try:
         logger.debug("[advisor] generate_checklist → appel emulate()")
         raw = emulate()
@@ -146,9 +156,40 @@ def generate_checklist(
             return list(FALLBACK_CHECKLIST)
         logger.info("[advisor] generate_checklist | résultat final: %s étape(s)", len(normalized))
         return normalized
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("[advisor] generate_checklist | échec emulate → FALLBACK | err=%s", exc)
+    except Exception:  # noqa: BLE001
+        logger.exception("[advisor] generate_checklist | échec emulate → FALLBACK")
         return list(FALLBACK_CHECKLIST)
+
+
+def synthesize_report_markdown(
+    document_seed_markdown: str,
+    retrieval_context: str = "",
+) -> str:
+    """
+    À partir du bloc « données factuelles » (markdown), rédige un document markdown complet
+    (titres ##, listes, ton pédagogique, français simple). Ne pas inventer de montants ni de dates
+    qui ne figurent pas dans le bloc ni dans retrieval_context.
+
+    retrieval_context : statistiques agrégées open data — contexte national uniquement.
+    """
+    logger.info(
+        "[advisor] synthesize_report_markdown | seed=%s caractères | open_data=%s caractères",
+        len(document_seed_markdown or ""),
+        len(retrieval_context or ""),
+    )
+    _ = (document_seed_markdown, retrieval_context)
+    try:
+        logger.debug("[advisor] synthesize_report_markdown → appel emulate()")
+        raw = emulate()
+        text = str(raw).strip() if raw is not None else ""
+        if not text:
+            logger.warning("[advisor] synthesize_report_markdown | réponse vide")
+            return ""
+        logger.info("[advisor] synthesize_report_markdown | OK | longueur=%s", len(text))
+        return text
+    except Exception:  # noqa: BLE001
+        logger.exception("[advisor] synthesize_report_markdown | échec emulate → chaîne vide")
+        return ""
 
 
 def explain_term(term: str) -> str:

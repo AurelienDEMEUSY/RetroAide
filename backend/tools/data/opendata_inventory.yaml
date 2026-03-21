@@ -1,0 +1,35 @@
+# D1 — Inventaire sources open data (RetroAide)
+# API CNAV : Explore v2.1 — https://data.cnav.fr/api/explore/v2.1/catalog/datasets/{dataset_id}/records
+
+cnav_base_url: "https://data.cnav.fr/api/explore/v2.1/catalog/datasets"
+
+cnav_datasets:
+  - dataset_id: montant-mensuel-moyen-de-la-retraite-globale-
+    title: "Montant mensuel moyen de la retraite globale (régime général)"
+    records_limit: 3
+    pedagogical_use: "Ordres de grandeur nationaux sur les montants servis (agrégés, pas dossier individuel)."
+    portal_page: "https://data.cnav.fr/explore/dataset/montant-mensuel-moyen-de-la-retraite-globale-"
+
+  - dataset_id: attributions-de-lannee-selon-le-type-de-droits
+    title: "Attributions de l'année selon le type de droits"
+    records_limit: 3
+    pedagogical_use: "Volume d'attributions par type de pension / sexe — contexte statistique."
+    portal_page: "https://data.cnav.fr/explore/dataset/attributions-de-lannee-selon-le-type-de-droits"
+
+  - dataset_id: montant-global-de-la-retraite-au-31-decembre
+    title: "Montant global de la retraite au 31 décembre (série longue)"
+    records_limit: 2
+    pedagogical_use: "Évolution du montant mensuel moyen servi — tendance long terme."
+    portal_page: "https://data.cnav.fr/explore/dataset/montant-global-de-la-retraite-au-31-decembre"
+
+# D1 — data.gouv.fr (recherche catalogue API v1)
+data_gouv:
+  api_base: "https://www.data.gouv.fr/api/1"
+  search:
+    query: "retraite assurance vieillesse"
+    page_size: 3
+  pedagogical_use: "Découvrir des jeux de données publics liés à la retraite (titres + organisations)."
+
+disclaimer: >
+  Données statistiques agrégées à visée pédagogique. Ne constituent pas une estimation personnelle
+  de pension ni un avis juridique.

@@ -14,7 +14,7 @@ from app.logging_config import setup_logging
 
 setup_logging()
 
-from app.routers import analyze, glossary
+from app.routers import analyze, glossary, internal
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,7 @@ app.add_middleware(
 )
 app.include_router(analyze.router, prefix="/api/v1")
 app.include_router(glossary.router, prefix="/api/v1")
+app.include_router(internal.router, prefix="/internal")
 
 
 @app.middleware("http")

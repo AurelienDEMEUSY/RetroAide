@@ -3,8 +3,23 @@ from unittest.mock import Mock, patch
 from fastapi.testclient import TestClient
 
 from app.main import app
+from tools.mcp_pipeline import EnrichmentResult, EnrichmentToolTrace
 
 client = TestClient(app)
+
+_ENRICHMENT_MOCK = EnrichmentResult(
+    context_block="[contexte test]",
+    sources_touched=["cnav:mock"],
+    tools=[
+        EnrichmentToolTrace(
+            tool="retroaide_open_data_bundle",
+            ok=True,
+            sources=["cnav:mock"],
+            error=None,
+            sub_steps=[],
+        )
+    ],
+)
 
 _MINIMAL_BODY = {
     "birth_year": 1963,
@@ -21,7 +36,9 @@ _MINIMAL_BODY = {
 
 @patch("app.routers.analyze.generate_checklist")
 @patch("app.routers.analyze.detect_missing_quarters")
+@patch("app.routers.analyze.run_enrichment", return_value=_ENRICHMENT_MOCK)
 def test_post_analyze_returns_expected_shape(
+    mock_enrichment: Mock,
     mock_missing: Mock,
     mock_checklist: Mock,
 ) -> None:
@@ -42,11 +59,16 @@ def test_post_analyze_returns_expected_shape(
     assert data["missing_quarters"][0]["period"] == "Chômage 2003"
     assert len(data["checklist"]) == 1
     assert data["checklist"][0]["title"] == "Étape 1"
+    assert data["enrichment"]["context_block"] == "[contexte test]"
+    assert data["enrichment"]["tools"][0]["tool"] == "retroaide_open_data_bundle"
 
+    mock_enrichment.assert_called_once()
     mock_missing.assert_called_once()
     mock_checklist.assert_called_once()
     call_profile = mock_missing.call_args[0][0]
     assert call_profile["birth_year"] == 1963
+    assert mock_missing.call_args.kwargs.get("retrieval_context") == "[contexte test]"
+    assert mock_checklist.call_args.kwargs.get("retrieval_context") == "[contexte test]"
 
 
 def test_post_analyze_validation_error_on_bad_status() -> None:
