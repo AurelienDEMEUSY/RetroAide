@@ -1,2 +1,4 @@
 # Vérifié via safety-mcp (latest_secure / recommandé) — mars 2026
 pytest==9.0.2
+OpenHosta==4.0.2
+python-dotenv==1.2.2

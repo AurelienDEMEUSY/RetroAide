@@ -24,6 +24,8 @@ Renseigner au minimum :
 - `OPENHOSTA_DEFAULT_MODEL_API_KEY` — clé API du modèle distant (voir [OpenHosta — Option B](https://github.com/hand-e-fr/OpenHosta#option-b-remote-api-openai)).
 - `CORS_ORIGINS` — origine du front Next.js (ex. `http://localhost:3000`).
 
+Les appels LLM du produit passent par **`ai/advisor.py`** (`detect_missing_quarters`, `generate_checklist`, `explain_term`) via `emulate()`. Le fichier **`ai/config.py`** charge `.env` avant l’import d’OpenHosta.
+
 ## Lancer l’API (une fois `app/main.py` en place)
 
 ```bash
