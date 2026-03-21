@@ -43,7 +43,14 @@ const Dashboard = () => {
         had_unemployment: onboarding.situations?.includes('unemployment') || false,
         had_long_sick_leave: onboarding.situations?.includes('sick_leave') || false,
         had_military_service: onboarding.situations?.includes('military') || false,
-        long_part_time_years: false
+        long_part_time_years: false,
+        full_name: onboarding.fullName || "",
+        ville_signature: onboarding.villeSignature || "",
+        nb_enfants: onboarding.nbEnfants ? parseInt(onboarding.nbEnfants, 10) : null,
+        nb_mois_armee: onboarding.nbMoisArmee ? parseInt(onboarding.nbMoisArmee, 10) : null,
+        nb_trimestres_avant_20: onboarding.nbTrimestresAvant20 ? parseInt(onboarding.nbTrimestresAvant20, 10) : null,
+        pays_etranger: onboarding.paysEtranger || "",
+        montant_estime_euros: onboarding.montantEstime ? parseInt(onboarding.montantEstime, 10) : null
       };
       
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';

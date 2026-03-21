@@ -22,13 +22,13 @@ const OnboardingStep1 = () => {
       {/* Progress Section */}
       <div className="w-full max-w-3xl mb-16">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-slate-500 text-lg font-medium">Étape 1 sur 3</span>
-          <span className="text-slate-900 text-lg font-bold">33% complété</span>
+          <span className="text-slate-500 text-lg font-medium">Étape 1 sur 4</span>
+          <span className="text-slate-900 text-lg font-bold">25% complété</span>
         </div>
         <div className="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden">
           <div 
             className="h-full bg-[#9AE6B4] rounded-full transition-all duration-500 ease-out" 
-            style={{ width: '33%' }} 
+            style={{ width: '25%' }} 
           />
         </div>
       </div>

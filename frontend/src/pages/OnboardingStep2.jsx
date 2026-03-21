@@ -43,12 +43,12 @@ const OnboardingStep2 = () => {
           <div className="mb-10 px-2">
             <div className="flex justify-between items-end mb-3">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                ÉTAPE 2 SUR 3
+                ÉTAPE 2 SUR 4
               </span>
-              <span className="text-[15px] font-extrabold text-[#0f172a]">66%</span>
+              <span className="text-[15px] font-extrabold text-[#0f172a]">50%</span>
             </div>
             <div className="w-full h-[6px] bg-slate-200 rounded-full overflow-hidden">
-              <div className="w-2/3 h-full bg-[#93e1b4] rounded-full" />
+              <div className="w-1/2 h-full bg-[#93e1b4] rounded-full" />
             </div>
           </div>
 

@@ -28,7 +28,7 @@ const OnboardingStep3 = () => {
           <span className="font-bold text-xl tracking-tight">RetroAide</span>
         </div>
         <div className="flex items-center gap-6">
-          <span className="font-semibold text-slate-900 text-sm sm:text-base">Étape 3 sur 3</span>
+          <span className="font-semibold text-slate-900 text-sm sm:text-base">Étape 3 sur 4</span>
         </div>
       </header>
 
@@ -39,6 +39,7 @@ const OnboardingStep3 = () => {
           <div className="h-1.5 flex-1 bg-[#c2f3d6] rounded-full"></div>
           <div className="h-1.5 flex-1 bg-[#c2f3d6] rounded-full"></div>
           <div className="h-1.5 flex-1 bg-[#c2f3d6] rounded-full"></div>
+          <div className="h-1.5 flex-1 bg-slate-200 rounded-full"></div>
         </div>
 
         {/* Title Section */}
@@ -94,11 +95,11 @@ const OnboardingStep3 = () => {
             onClick={() => {
               const data = JSON.parse(localStorage.getItem('retroaide_onboarding') || '{}');
               localStorage.setItem('retroaide_onboarding', JSON.stringify({ ...data, situations: selectedSituations }));
-              navigate('/dashboard');
+              navigate('/onboarding/4');
             }}
             className="w-2/3 py-5 bg-[#1e293b] text-white text-lg font-bold rounded-xl shadow-xl hover:bg-[#0f172a] hover:scale-[1.01] active:scale-[0.99] transition-all mb-16"
           >
-            Analyser ma situation
+            Continuer
           </button>
         </div>
       </main>
