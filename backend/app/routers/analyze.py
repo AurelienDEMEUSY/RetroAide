@@ -110,6 +110,16 @@ def _run_analyze_pipeline(body: UserProfile) -> _AnalyzeRun:
 
     log.info("[analyze] enrichissement (pipeline MCP équivalent — APIs externes)")
     enrichment = run_enrichment(profile_dict)
+    
+    # Injection de l'objectif de départ pour orienter l'IA
+    if body.target_departure_age:
+        if body.target_departure_age < departure_age:
+            ecart = departure_age - body.target_departure_age
+            enrichment.context_block += f"\n\n*** ATTENTION - OBJECTIF UTILISATEUR ***\nL'utilisateur souhaite partir à la retraite à {body.target_departure_age} ans, soit {ecart} ans AVANT l'âge légal ({departure_age} ans). Oriente tes conseils sur les conditions de départ anticipé (carrière longue, pénibilité), le rachat de trimestres, ou l'impact financier d'une décote."
+        elif body.target_departure_age > departure_age:
+            ecart = body.target_departure_age - departure_age
+            enrichment.context_block += f"\n\n*** ATTENTION - OBJECTIF UTILISATEUR ***\nL'utilisateur souhaite travailler jusqu'à {body.target_departure_age} ans, soit {ecart} ans APRÈS l'âge légal ({departure_age} ans). Oriente tes conseils sur la surcote, le cumul emploi-retraite ou la retraite progressive."
+
     log.info(
         "[analyze] enrichissement | sources=%s | longueur_bloc=%s | outils=%s",
         enrichment.sources_touched,
