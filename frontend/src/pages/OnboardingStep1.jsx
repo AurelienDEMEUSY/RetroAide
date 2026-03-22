@@ -71,21 +71,38 @@ const OnboardingStep1 = () => {
             <div>
               <label className="block text-sm font-bold text-slate-500 mb-2 ml-2">Mois (1-12)</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="Ex: 5"
-                min="1" max="12"
                 value={birthMonth}
-                onChange={(e) => setBirthMonth(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '');
+                  setBirthMonth(v);
+                }}
+                onBlur={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!isNaN(v) && (v < 1 || v > 12)) setBirthMonth('');
+                }}
                 className="w-full p-5 bg-slate-100/80 rounded-2xl border-none text-xl focus:ring-2 focus:ring-[#0F2544] transition-all placeholder:text-slate-300"
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-500 mb-2 ml-2">Année</label>
+              <label className="block text-sm font-bold text-slate-500 mb-2 ml-2">Année (1900-2010)</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="Ex: 1975"
                 value={birthYear}
-                onChange={(e) => setBirthYear(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '');
+                  setBirthYear(v);
+                }}
+                onBlur={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!isNaN(v) && (v < 1900 || v > 2010)) setBirthYear('');
+                }}
                 className="w-full p-5 bg-slate-100/80 rounded-2xl border-none text-xl focus:ring-2 focus:ring-[#0F2544] transition-all placeholder:text-slate-300"
               />
             </div>
@@ -129,11 +146,19 @@ const OnboardingStep1 = () => {
         <div className="bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-50">
           <h3 className="text-2xl font-bold mb-6">Combien d'enfants avez-vous eu ?</h3>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             placeholder="Ex: 2"
-            min="0"
             value={nbEnfants}
-            onChange={(e) => setNbEnfants(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value.replace(/[^0-9]/g, '');
+              setNbEnfants(v);
+            }}
+            onBlur={(e) => {
+              const v = parseInt(e.target.value, 10);
+              if (!isNaN(v) && (v < 0 || v > 15)) setNbEnfants('');
+            }}
             className="w-full sm:w-1/2 p-5 bg-slate-100/80 rounded-2xl border-none text-xl focus:ring-2 focus:ring-[#0F2544] transition-all placeholder:text-slate-300"
           />
         </div>

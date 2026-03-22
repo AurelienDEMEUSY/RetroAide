@@ -98,8 +98,12 @@ const OnboardingStep5 = () => {
               <input
                 type="number"
                 value={perVersementMensuel}
-                onChange={(e) => setPerVersementMensuel(e.target.value)}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (e.target.value === '' || (v >= 0 && v <= 50000)) setPerVersementMensuel(e.target.value);
+                }}
                 placeholder="Ex: 150"
+                min="0" max="50000"
                 className="w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0f172a] outline-none transition-all placeholder:text-slate-400"
               />
             </div>

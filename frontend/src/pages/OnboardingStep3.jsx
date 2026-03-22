@@ -106,9 +106,12 @@ const OnboardingStep3 = () => {
                 <input
                   type="number"
                   placeholder="Ex: 45000"
-                  min="0"
+                  min="0" max="300000"
                   value={currentIncomeAnnual}
-                  onChange={(e) => setCurrentIncomeAnnual(e.target.value)}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (e.target.value === '' || (v >= 0 && v <= 300000)) setCurrentIncomeAnnual(e.target.value);
+                  }}
                   className="w-full p-5 pr-12 bg-slate-50 rounded-xl border border-slate-200 text-xl font-medium focus:ring-2 focus:ring-[#0f172a] transition-all placeholder:text-slate-300"
                 />
                 <span className="absolute right-5 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">€</span>
@@ -124,13 +127,16 @@ const OnboardingStep3 = () => {
             <input
               type="number"
               placeholder="Ex: 110"
-              min="0"
+              min="0" max="172"
               value={validatedQuarters}
-              onChange={(e) => setValidatedQuarters(e.target.value)}
+              onChange={(e) => {
+                const v = parseInt(e.target.value, 10);
+                if (e.target.value === '' || (v >= 0 && v <= 172)) setValidatedQuarters(e.target.value);
+              }}
               className="w-full sm:w-1/2 p-5 bg-slate-50 rounded-xl border border-slate-200 text-xl font-medium focus:ring-2 focus:ring-[#0f172a] transition-all placeholder:text-slate-300"
             />
             <p className="text-sm text-slate-500 mt-3 font-medium">
-              Ce nombre figure sur votre dernier relevé de carrière.
+              Ce nombre figure sur votre dernier relevé de carrière (max : 172).
             </p>
           </div>
         </div>
