@@ -93,8 +93,13 @@ def _run_analyze_pipeline(body: UserProfile) -> _AnalyzeRun:
     age_taux = statutory_full_rate_age(body.birth_year)
 
     log.debug("[analyze] étape calculator: estimate_quarters_worked(%s, %s)", body.career_start_age, body.birth_year)
-    quarters_worked = estimate_quarters_worked(body.career_start_age, body.birth_year)
-    log.debug("[analyze] → quarters_worked=%s", quarters_worked)
+    # On utilise la valeur saisie si elle est renseignée (> 0), sinon on estime.
+    if body.validated_quarters > 0:
+        quarters_worked = body.validated_quarters
+        log.debug("[analyze] → quarters_worked (saisie)=%s", quarters_worked)
+    else:
+        quarters_worked = estimate_quarters_worked(body.career_start_age, body.birth_year)
+        log.debug("[analyze] → quarters_worked (estimée)=%s", quarters_worked)
 
     log.debug("[analyze] étape calculator: quarters_remaining(%s)", quarters_worked)
     q_remaining = quarters_remaining(
