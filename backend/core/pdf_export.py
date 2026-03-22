@@ -286,15 +286,16 @@ def _render_h3(pdf: FactureRetraitePDF, line: str) -> None:
 
 def _render_key_value_bullet(pdf: FactureRetraitePDF, line: str) -> None:
     """Rend ``- **Clé** : valeur`` en key_value_row."""
-    parts = line.rsplit(" : ", 1)
+    # Nettoyer TOUTE annotation _(...)_ ou _(...**...**)_ avant de parser
+    cleaned = re.sub(r"\s*_\(.*?\)_", "", line)
+    cleaned = re.sub(r"\s*_\([^)]*\*\*[^)]*\*\*[^)]*\)_", "", cleaned)
+    parts = cleaned.rsplit(" : ", 1)
     if len(parts) == 2:
         key = parts[0][2:].replace("**", "").strip()
-        val = parts[1]
-        val = re.sub(r"\s*_\(.*?\)_", "", val)
-        val = val.replace("**", "").replace("*", "").strip().strip("_")
+        val = parts[1].replace("**", "").replace("*", "").strip().strip("_")
         pdf.key_value_row(key + " :", val)
     else:
-        pdf.paragraph("- " + line[2:].replace("**", ""))
+        pdf.paragraph("- " + cleaned[2:].replace("**", ""))
 
 
 def _render_link_bullet(pdf: FactureRetraitePDF, line: str) -> None:
@@ -343,10 +344,35 @@ def _render_generic_text(pdf: FactureRetraitePDF, line: str) -> None:
         pdf.paragraph(text)
 
 
+_SKIP_PATTERNS = re.compile(
+    r"(?i)"
+    r"(fait\s+[aà]\s*:?\s*\[)"              # Fait à : [Ville]
+    r"|(\[nom[,\s])"                          # [Nom, prénom] / [Nom, qualité]
+    r"|(signature\s+d[ue]\s)"                 # Signature du souscripteur / représentant
+    r"|([rr]epr[eé]sentant\s+BNP)"            # BNP Paribas
+    r"|(le\s+souscripteur)"                   # Le souscripteur
+    r"|(l.organisme\s+gestionnaire)"          # L'organisme gestionnaire
+    r"|(\(signature)"                         # (Signature) / (Signature, cachet)
+    r"|(\[\s*[aà]\s+compl[eé]ter\s*\])"       # [à compléter]
+    r"|(lieu\s*:\s*\[)"                       # Lieu : [à compléter]
+    r"|(date\s*:\s*\[)"                       # Date : [à compléter]
+    r"|_{5,}"                                 # Lignes avec _____ (formulaire à remplir)
+    r"|(à\s+compl[eé]ter)"                    # Texte contenant "à compléter"
+    r"|(mandataire\s+[eé]ventuel)"            # Mandataire éventuel
+    r"|(\[\s*indiquer\s*)"                    # [Indiquer si courtier...]
+    r"|(^-?\s*(?:\*\*)?et(?:\*\*)?\s*:\s*$)"  # "Et :" isolé
+)
+
 def _render_markdown_line(pdf: FactureRetraitePDF, line: str) -> None:
     """Dispatch une ligne markdown vers le bon renderer."""
+    # Ignorer les lignes de signature template / placeholders
+    if _SKIP_PATTERNS.search(line):
+        return
+
     if line.startswith("## "):
         _render_h2(pdf, line)
+    elif line.startswith("#### "):
+        pdf.sub_title(line[5:].replace("**", ""))
     elif line.startswith("### "):
         _render_h3(pdf, line)
     elif line.startswith("# "):
