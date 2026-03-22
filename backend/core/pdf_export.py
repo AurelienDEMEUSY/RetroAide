@@ -327,6 +327,17 @@ def _render_blockquote(pdf: FactureRetraitePDF, line: str) -> None:
     pdf.info_box(text)
 
 
+def _render_table_row(pdf: FactureRetraitePDF, line: str) -> None:
+    """Rend une ligne de tableau markdown en un paragraphe simple."""
+    clean_line = line.strip().strip("|")
+    # Ignorer la ligne de séparation |---|---|
+    if not set(clean_line.replace("-", "").replace(":", "").replace(" ", "")):
+        return
+    cells = [c.strip() for c in clean_line.split("|")]
+    text = " - ".join(c for c in cells if c)
+    pdf.paragraph(text)
+
+
 def _render_dict_line(pdf: FactureRetraitePDF, line: str) -> None:
     """Rend une ligne brute de type dict stringifié en police fixe."""
     pdf.set_font("courier", "", 8)
@@ -361,6 +372,9 @@ _SKIP_PATTERNS = re.compile(
     r"|(mandataire\s+[eé]ventuel)"            # Mandataire éventuel
     r"|(\[\s*indiquer\s*)"                    # [Indiquer si courtier...]
     r"|(^-?\s*(?:\*\*)?et(?:\*\*)?\s*:\s*$)"  # "Et :" isolé
+    r"|(^souscripteur\s*:?$)"                 # Souscripteur :
+    r"|(^signature\s*:?$)"                    # Signature :
+    r"|(^date\s*:\s*/\s*/?$)"                 # Date : / /
 )
 
 def _render_markdown_line(pdf: FactureRetraitePDF, line: str) -> None:
@@ -387,6 +401,8 @@ def _render_markdown_line(pdf: FactureRetraitePDF, line: str) -> None:
         _render_numbered_step(pdf, line)
     elif line.startswith("> "):
         _render_blockquote(pdf, line)
+    elif line.startswith("|") and line.endswith("|"):
+        _render_table_row(pdf, line)
     elif line.startswith("---"):
         pdf.hr()
     elif line.startswith("{'") and line.endswith("'}"):
